@@ -144,34 +144,35 @@ const UI = (() => {
   }
 
   // ---------- Buscador unificado ----------
-  const Search = { cats: [], index: [] };
   const norm = (s) =>
     String(s || "")
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "");
 
-  function setCats(cats) {
-    Search.cats = cats || [];
-    buildSearchIndex();
+  function ensureSearchOverlay() {
+    const panel = $("#searchPanel");
+    if (!panel || panel.dataset.simple === "true") return;
+    panel.innerHTML = `
+      <div class="mx-auto max-w-5xl">
+        <div class="h-12 rounded-full bg-neutral-900 border border-white/10 flex items-center pl-4 shadow-lg">
+          <span class="inline-block h-3 w-3 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 mr-2"></span>
+          <input id="searchUnified" type="search" inputmode="search" placeholder="Buscar platos, ingredientes o categorias"
+            class="flex-1 bg-transparent border-0 focus:outline-none text-[0.8rem] leading-[1.25rem] placeholder:text-neutral-400" />
+          <button id="clearSearch" class="ml-0 h-[45px] w-[45px] grid place-content-center rounded-full bg-neutral-800 border border-white/10 text-base">&times;</button>
+        </div>
+        <p id="searchStatus" class="hidden mt-2 text-sm text-neutral-400"></p>
+      </div>
+    `;
+    panel.dataset.simple = "true";
   }
 
-  function buildSearchIndex() {
-    const items = Store?.state?.items || [];
-    Search.index = items.map((it) => ({
-      id: it.id,
-      name: String(it.nombre || ""),
-      cat: String(it.categoria || "Otros"),
-      desc: String(it.descripcion || ""),
-      foto: it.foto || "",
-      price: Number(it.precio) || 0,
-      text: norm(
-        [it.nombre, it.descripcion, it.ingredientes, it.categoria].join(" ")
-      ),
-    }));
-  }
+  // chips removidos para diseño minimalista
 
   function openSearchPanel() {
+    ensureSearchOverlay();
+    if ($("#searchUnified") && $("#search"))
+      $("#searchUnified").value = $("#search").value || "";
     $("#searchPanel")?.classList.remove("hidden");
     $("#searchUnified")?.focus();
   }
@@ -180,93 +181,78 @@ const UI = (() => {
     $("#searchPanel")?.classList.add("hidden");
     if (clear) {
       if ($("#searchUnified")) $("#searchUnified").value = "";
-      const list = $("#searchList");
-      const chips = $("#searchCatChips");
-      if (list) list.innerHTML = "";
-      if (chips) chips.innerHTML = "";
+      if ($("#search")) $("#search").value = "";
     }
-  }
-
-  function renderSearchResults(qRaw) {
-    const q = norm(qRaw.trim());
-    const list = $("#searchList");
-    const chips = $("#searchCatChips");
-    if (!list || !chips) return;
-
-    list.innerHTML = "";
-    chips.innerHTML = "";
-    if (!q) return;
-
-    // Categorías sugeridas
-    const catMatches = Search.cats
-      .filter((c) => norm(c).includes(q))
-      .slice(0, 6);
-    catMatches.forEach((c) => {
-      const b = document.createElement("button");
-      b.className =
-        "w-full text-left px-4 py-3 rounded-2xl bg-neutral-900 border border-white/15 text-base font-bold tracking-wide uppercase";
-      b.textContent = c;
-      b.onclick = () => {
-        closeSearchPanel();
-        goToCategory(`#sec-${slug(c)}`, "auto");
-      };
-      chips.appendChild(b);
-    });
-
-    // Items sugeridos
-    const itemMatches = Search.index
-      .filter((it) => it.text.includes(q))
-      .slice(0, 12);
-    if (!itemMatches.length && !catMatches.length) {
-      list.innerHTML =
-        '<p class="text-sm text-neutral-500">No encontramos resultados.</p>';
-      return;
-    }
-
-    itemMatches.forEach((it) => {
-      const row = document.createElement("button");
-      row.className =
-        "w-full text-left border border-white/5 rounded-2xl px-3 py-3 bg-neutral-900/60 hover:border-white/20 transition";
-      const price = Store?.fmt ? Store.fmt(it.price) : it.price;
-      const desc = it.desc
-        ? `<div class="text-xs text-neutral-500 line-clamp-2 mt-1">${it.desc}</div>`
-        : "";
-      const thumb = it.foto
-        ? `<div class="w-14 h-14 rounded-xl overflow-hidden border border-white/10 flex-shrink-0"><img src="${it.foto}" alt="${it.name}" class="w-full h-full object-cover"></div>`
-        : "";
-      row.innerHTML = `
-        <div class="flex gap-3 items-center">
-          <div class="flex-1 min-w-0 text-left">
-            <div class="text-sm font-semibold">${it.name}</div>
-            <div class="text-xs text-neutral-400">${it.cat}</div>
-            ${desc}
-            <div class="text-sm font-semibold text-green-400 mt-1">$${price}</div>
-          </div>
-          ${thumb}
-        </div>`;
-      row.onclick = () => {
-        closeSearchPanel();
-        scrollToItem(it.id);
-      };
-      list.appendChild(row);
-    });
+    applySearch();
   }
 
   function applySearch() {
-    const q = ($("#searchUnified")?.value || "").trim();
-    renderSearchResults(q);
-  }
+    ensureSearchOverlay();
+    const raw = ($("#searchUnified")?.value || $("#search")?.value || "").trim();
+    const q = norm(raw);
+    const sections = $$("#content .cat-section");
+    const status = $("#searchStatus");
+    let emptyBanner = document.getElementById('noResults');
+    if (!emptyBanner) {
+      emptyBanner = document.createElement('div');
+      emptyBanner.id = 'noResults';
+      emptyBanner.className = 'hidden mx-auto max-w-5xl px-3 sm:px-4 mt-4 text-sm text-neutral-400';
+      const content = document.getElementById('content');
+      content?.parentNode?.insertBefore(emptyBanner, content.nextSibling);
+    }
+    let matches = 0;
 
-  function scrollToItem(id) {
-    const row =
-      document.querySelector(`.item-row[data-detail="${id}"]`) ||
-      document.querySelector(`[data-detail="${id}"]`);
-    if (!row) return;
-    const off = calcOffset();
-    const y = row.getBoundingClientRect().top + window.pageYOffset - off - 12;
-    window.scrollTo({ top: y, behavior: "smooth" });
-    row.classList.add("flash");
-    setTimeout(() => row.classList.remove("flash"), 1300);
+    // ocultar/mostrar tabs de categorías según haya término
+    const tabs = document.getElementById('catTabs');
+    if (tabs) tabs.classList.toggle('hidden', Boolean(q));
+
+    sections.forEach((sec) => {
+      const heading = sec.querySelector(".h-cat")?.textContent || "";
+      const rows = Array.from(sec.querySelectorAll(".item-row"));
+      if (!q) {
+        sec.style.display = "";
+        rows.forEach((row) => (row.style.display = ""));
+        // restaurar márgenes por si fueron modificados
+        sec.style.marginTop = "";
+        return;
+      }
+      const headingMatch = norm(heading).includes(q);
+      let sectionMatch = false;
+      rows.forEach((row) => {
+        const cache =
+          row.dataset.searchText || (row.dataset.searchText = norm(row.textContent));
+        const match = headingMatch || cache.includes(q);
+        row.style.display = match ? "" : "none";
+        if (match) sectionMatch = true;
+      });
+      sec.style.display = sectionMatch ? "" : "none";
+      if (sectionMatch) matches++;
+    });
+
+    // corregir salto visual: quitar margen superior al primer bloque visible
+    if (q) {
+      const visible = sections.filter(sec => sec.style.display !== 'none');
+      visible.forEach((sec, idx) => {
+        if (idx === 0) sec.style.marginTop = '0px';
+        else sec.style.marginTop = '';
+      });
+    }
+
+    if (status) {
+      if (!q) {
+        status.textContent = "";
+        status.classList.add("hidden");
+        if (emptyBanner) emptyBanner.classList.add('hidden');
+      } else if (!matches) {
+        status.textContent = `Sin resultados para “${raw}”.`;
+        status.classList.remove("hidden");
+        if (emptyBanner) { emptyBanner.textContent = `No encontramos coincidencias. Prueba con otro término o revisa las categorías.`; emptyBanner.classList.remove('hidden'); }
+      } else {
+        status.textContent = "";
+        status.classList.add("hidden");
+        if (emptyBanner) emptyBanner.classList.add('hidden');
+      }
+    }
   }
 
   // ---------- Modal ----------
@@ -388,6 +374,7 @@ const UI = (() => {
 
   // ---------- Eventos ----------
   function wireEvents() {
+    ensureSearchOverlay();
     $("#openCatMenu")?.addEventListener("click", () => {
       openOverlay("#catMenuOverlay");
       const activeText = $("#catTabs button.active")?.textContent?.trim();
@@ -409,13 +396,20 @@ const UI = (() => {
 
     // search mejorado
     $("#openSearch")?.addEventListener("click", openSearchPanel);
+    $("#search")?.addEventListener("input", () => {
+      ensureSearchOverlay();
+      if ($("#searchUnified"))
+        $("#searchUnified").value = $("#search").value || "";
+      applySearch();
+    });
     $("#searchUnified")?.addEventListener("input", applySearch);
     $("#clearSearch")?.addEventListener("click", () => closeSearchPanel(true));
     document.addEventListener("click", (ev) => {
       const p = ev.target.closest("#searchPanel");
       const trigger =
         ev.target.closest("#openSearch") || ev.target.closest("#search");
-      if (!p && !trigger) closeSearchPanel(false);
+      // cerrar y limpiar si se hace click fuera
+      if (!p && !trigger) closeSearchPanel(true);
     });
     document.addEventListener("keydown", (ev) => {
       if (ev.key === "Escape") closeSearchPanel(true);
@@ -450,6 +444,5 @@ const UI = (() => {
     applySearch,
     smoothScrollTo,
     calcOffset,
-    setCats,
   };
 })();

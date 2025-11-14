@@ -67,19 +67,13 @@
         <nav id="catTabs" class="mx-auto max-w-5xl px-2 sm:px-4 pb-2 overflow-x-auto no-scrollbar flex gap-4"></nav>
 
         <!-- Panel de busqueda superpuesto al actionBar -->
-        <div id="searchPanel" class="hidden absolute inset-0 px-3 sm:px-4 py-3 bg-neutral-950/95 backdrop-blur border-b border-white/10 z-40">
-            <div class="mx-auto max-w-5xl space-y-3">
-                <div class="relative">
-                    <div class="h-12 rounded-full bg-neutral-900 border border-white/10 flex items-center px-4 shadow-lg">
-                        <span class="inline-block h-3 w-3 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 mr-2"></span>
-                        <input id="searchUnified" type="search" inputmode="search" placeholder="Buscar platos, ingredientes o categorias"
-                            class="flex-1 bg-transparent border-0 focus:outline-none text-sm placeholder:text-neutral-400" />
-                        <button id="clearSearch" class="ml-2 h-9 w-9 grid place-content-center rounded-full bg-neutral-800 border border-white/10 text-base">&times;</button>
-                    </div>
-                </div>
-                <div class="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
-                    <div id="searchCatChips" class="space-y-2"></div>
-                    <div id="searchList" class="space-y-1"></div>
+        <div id="searchPanel" class="hidden absolute inset-0 px-3 sm:px-4 py-3 z-40 bg-neutral-950/95 backdrop-blur border-b border-white/10" style="border: none;">
+            <div class="mx-auto max-w-5xl">
+                <div class="h-12 rounded-full bg-neutral-900 border border-white/10 flex items-center pl-4 shadow-lg">
+                    <span class="inline-block h-3 w-3 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 mr-2"></span>
+                    <input id="searchUnified" type="search" inputmode="search" placeholder="Buscar platos, ingredientes o categorias"
+                        class="flex-1 bg-transparent border-0 focus:outline-none text-sm placeholder:text-neutral-400" />
+                    <button id="clearSearch" class="ml-0 h-[45px] w-[45px] grid place-content-center rounded-full bg-neutral-800 border border-white/10 text-base">&times;</button>
                 </div>
             </div>
         </div>

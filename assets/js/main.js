@@ -9,7 +9,6 @@
     UI.renderHeaderBrand(Store.state.cfg);
 
     const grouped = UI.groupByCategory(Store.state.items);
-    UI.setCats(grouped.cats);
     UI.buildTabs(grouped.cats);
     UI.buildCatMenus(grouped.cats);
     UI.buildSections(grouped);
