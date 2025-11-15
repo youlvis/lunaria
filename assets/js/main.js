@@ -1,10 +1,10 @@
-(async function init() {
+﻿(async function init() {
+  const hidePreloader = () => document.getElementById('preloader')?.classList.add('hidden');
   try {
     UI.calcOffset();
     const data = await fetchMenu();
     Store.state.items = (data.items || []).filter(i => i && i.nombre);
     Store.state.cfg = data.config || {};
-
 
     UI.renderHeaderBrand(Store.state.cfg);
 
@@ -19,5 +19,7 @@
   } catch (e) {
     console.error(e);
     alert('No se pudo cargar el menú. Reintenta en unos segundos.');
+  } finally {
+    hidePreloader();
   }
 })();

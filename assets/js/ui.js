@@ -173,12 +173,16 @@ const UI = (() => {
     ensureSearchOverlay();
     if ($("#searchUnified") && $("#search"))
       $("#searchUnified").value = $("#search").value || "";
+    const _tabs = document.getElementById('catTabs');
+    if (_tabs) _tabs.classList.add('hidden');
     $("#searchPanel")?.classList.remove("hidden");
     $("#searchUnified")?.focus();
   }
 
   function closeSearchPanel(clear = true) {
     $("#searchPanel")?.classList.add("hidden");
+    const _tabs = document.getElementById('catTabs');
+    if (_tabs) _tabs.classList.remove('hidden');
     if (clear) {
       if ($("#searchUnified")) $("#searchUnified").value = "";
       if ($("#search")) $("#search").value = "";
@@ -201,10 +205,6 @@ const UI = (() => {
       content?.parentNode?.insertBefore(emptyBanner, content.nextSibling);
     }
     let matches = 0;
-
-    // ocultar/mostrar tabs de categorías según haya término
-    const tabs = document.getElementById('catTabs');
-    if (tabs) tabs.classList.toggle('hidden', Boolean(q));
 
     sections.forEach((sec) => {
       const heading = sec.querySelector(".h-cat")?.textContent || "";
@@ -446,3 +446,4 @@ const UI = (() => {
     calcOffset,
   };
 })();
+
