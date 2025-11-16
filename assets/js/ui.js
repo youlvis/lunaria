@@ -167,22 +167,26 @@ const UI = (() => {
     panel.dataset.simple = "true";
   }
 
-  // chips removidos para diseño minimalista
+  // chips removidos para diseño minimalistaf
 
   function openSearchPanel() {
     ensureSearchOverlay();
     if ($("#searchUnified") && $("#search"))
       $("#searchUnified").value = $("#search").value || "";
-    const _tabs = document.getElementById('catTabs');
-    if (_tabs) _tabs.classList.add('hidden');
+    const _tabs = document.getElementById("catTabs");
+    if (_tabs) _tabs.classList.add("hidden");
+    const _options = document.getElementById("optionsBar");
+    if (_options) _options.classList.add("hidden");
     $("#searchPanel")?.classList.remove("hidden");
     $("#searchUnified")?.focus();
   }
 
   function closeSearchPanel(clear = true) {
     $("#searchPanel")?.classList.add("hidden");
-    const _tabs = document.getElementById('catTabs');
-    if (_tabs) _tabs.classList.remove('hidden');
+    const _tabs = document.getElementById("catTabs");
+    if (_tabs) _tabs.classList.remove("hidden");
+    const _options = document.getElementById("optionsBar");
+    if (_options) _options.classList.remove("hidden");
     if (clear) {
       if ($("#searchUnified")) $("#searchUnified").value = "";
       if ($("#search")) $("#search").value = "";
@@ -192,16 +196,21 @@ const UI = (() => {
 
   function applySearch() {
     ensureSearchOverlay();
-    const raw = ($("#searchUnified")?.value || $("#search")?.value || "").trim();
+    const raw = (
+      $("#searchUnified")?.value ||
+      $("#search")?.value ||
+      ""
+    ).trim();
     const q = norm(raw);
     const sections = $$("#content .cat-section");
     const status = $("#searchStatus");
-    let emptyBanner = document.getElementById('noResults');
+    let emptyBanner = document.getElementById("noResults");
     if (!emptyBanner) {
-      emptyBanner = document.createElement('div');
-      emptyBanner.id = 'noResults';
-      emptyBanner.className = 'hidden mx-auto max-w-5xl px-3 sm:px-4 mt-4 text-sm text-neutral-400';
-      const content = document.getElementById('content');
+      emptyBanner = document.createElement("div");
+      emptyBanner.id = "noResults";
+      emptyBanner.className =
+        "hidden mx-auto max-w-5xl px-3 sm:px-4 mt-4 text-sm text-neutral-400";
+      const content = document.getElementById("content");
       content?.parentNode?.insertBefore(emptyBanner, content.nextSibling);
     }
     let matches = 0;
@@ -220,7 +229,8 @@ const UI = (() => {
       let sectionMatch = false;
       rows.forEach((row) => {
         const cache =
-          row.dataset.searchText || (row.dataset.searchText = norm(row.textContent));
+          row.dataset.searchText ||
+          (row.dataset.searchText = norm(row.textContent));
         const match = headingMatch || cache.includes(q);
         row.style.display = match ? "" : "none";
         if (match) sectionMatch = true;
@@ -231,10 +241,10 @@ const UI = (() => {
 
     // corregir salto visual: quitar margen superior al primer bloque visible
     if (q) {
-      const visible = sections.filter(sec => sec.style.display !== 'none');
+      const visible = sections.filter((sec) => sec.style.display !== "none");
       visible.forEach((sec, idx) => {
-        if (idx === 0) sec.style.marginTop = '0px';
-        else sec.style.marginTop = '';
+        if (idx === 0) sec.style.marginTop = "0px";
+        else sec.style.marginTop = "";
       });
     }
 
@@ -242,15 +252,18 @@ const UI = (() => {
       if (!q) {
         status.textContent = "";
         status.classList.add("hidden");
-        if (emptyBanner) emptyBanner.classList.add('hidden');
+        if (emptyBanner) emptyBanner.classList.add("hidden");
       } else if (!matches) {
         status.textContent = `Sin resultados para “${raw}”.`;
         status.classList.remove("hidden");
-        if (emptyBanner) { emptyBanner.textContent = `No encontramos coincidencias. Prueba con otro término o revisa las categorías.`; emptyBanner.classList.remove('hidden'); }
+        if (emptyBanner) {
+          emptyBanner.textContent = `No encontramos coincidencias. Prueba con otro término o revisa las categorías.`;
+          emptyBanner.classList.remove("hidden");
+        }
       } else {
         status.textContent = "";
         status.classList.add("hidden");
-        if (emptyBanner) emptyBanner.classList.add('hidden');
+        if (emptyBanner) emptyBanner.classList.add("hidden");
       }
     }
   }
@@ -446,4 +459,3 @@ const UI = (() => {
     calcOffset,
   };
 })();
-
