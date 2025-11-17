@@ -229,6 +229,11 @@ input {
 
 .item-row:hover { box-shadow: 0 4px 12px var(--col-sombra); }
 
+/* Cuando el detalle está abierto, ocultar la pantalla principal */
+body.detail-open #homeScreen {
+  display: none;
+}
+
 /* ====== THEME OVERRIDE: Azul petróleo + dorado ======
    Ajusta aquí si quieres variar la tonalidad sin tocar componentes */
 :root {

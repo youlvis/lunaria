@@ -286,6 +286,7 @@ const UI = (() => {
   }
   function toggleDetail(open) {
     $("#detailModal")?.classList.toggle("hidden", !open);
+    document.body.classList.toggle("detail-open", open);
   }
 
   // ---------- Overlays ----------

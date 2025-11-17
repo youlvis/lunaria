@@ -17,170 +17,175 @@
   </head>
 
   <body class="bg-neutral-950 text-neutral-50">
-    <!-- HERO con logo -->
-    <header class="relative">
-      <div class="h-40 sm:h-56 w-full overflow-hidden">
-        <img
-          id="heroImg"
-          src="https://res.cloudinary.com/dh2byewas/image/upload/ar_16:9,c_crop,g_north_west,h_1165,w_1537,y_733/c_auto,h_160,w_360/IMG_6007_otxh3l.jpg"
-          alt=""
-          class="w-full h-full object-cover opacity-70"
-        />
-      </div>
-      <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <!-- <img
+    <div id="homeScreen">
+      <!-- HERO con logo -->
+      <header class="relative">
+        <div class="h-40 sm:h-56 w-full overflow-hidden">
+          <img
+            id="heroImg"
+            src="https://res.cloudinary.com/dh2byewas/image/upload/ar_16:9,c_crop,g_north_west,h_1165,w_1537,y_733/c_auto,h_160,w_360/IMG_6007_otxh3l.jpg"
+            alt=""
+            class="w-full h-full object-cover opacity-70"
+          />
+        </div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <!-- <img
           id="logo"
           class="w-16 h-16 rounded-xl object-cover ring-1 ring-white/40 shadow"
           alt="Logo"
         /> -->
-        <!-- <h1
+          <!-- <h1
           id="brand"
           class="mt-3 text-xl sm:text-2xl font-extrabold drop-shadow"
         >
           NOMBRE DEL RESTAURANTE
         </h1> -->
-        <img src="assets/img/logo-icon.svg" class="shadow h-[100%]" alt="Lunaria" />
-      </div>
-    </header>
+          <img
+            src="assets/img/logo-icon.svg"
+            class="shadow h-[100%]"
+            alt="Lunaria"
+          />
+        </div>
+      </header>
 
-    <!-- BARRA DE ACCIONES -->
-    <section
-      id="actionBar"
-      class="sticky top-0 z-30 bg-neutral-950/90 backdrop-blur border-b border-white/10 relative"
-    >
-      <div
-        id="optionsBar"
-        class="mx-auto max-w-5xl px-3 sm:px-4 py-3 grid grid-cols-12 gap-2 items-center"
+      <!-- BARRA DE ACCIONES -->
+      <section
+        id="actionBar"
+        class="sticky top-0 z-30 bg-neutral-950/90 backdrop-blur border-b border-white/10 relative"
       >
-        <!-- Buscar -->
-        <div class="col-span-2 sm:col-span-3">
-          <button
-            id="openSearch"
-            class="w-10 h-10 grid place-content-center rounded-xl border border-white/10 bg-[var(--bg)]"
-          >
-            <img
-              src="assets/img/search.svg"
-              class="w-[20px] h-[20px]"
-              alt="Buscar"
+        <div
+          id="optionsBar"
+          class="mx-auto max-w-5xl px-3 sm:px-4 py-3 grid grid-cols-12 gap-2 items-center"
+        >
+          <!-- Buscar -->
+          <div class="col-span-2 sm:col-span-3">
+            <button
+              id="openSearch"
+              class="w-10 h-10 grid place-content-center rounded-xl border border-white/10 bg-[var(--bg)]"
+            >
+              <img
+                src="assets/img/search.svg"
+                class="w-[20px] h-[20px]"
+                alt="Buscar"
+              />
+            </button>
+          </div>
+
+          <!-- Categorias (menu hamburguesa) -->
+          <div class="col-span-2 sm:col-span-3">
+            <button
+              id="openCatMenu"
+              class="w-10 h-10 grid place-content-center rounded-xl bg-[var(--bg)] border border-white/10"
+            >
+              <img
+                src="assets/img/menu-icon.svg"
+                class="w-[20px] h-[20px]"
+                alt="Categorias"
+              />
+            </button>
+          </div>
+
+          <!-- Titulo de la categoria actual (solo movil) -->
+          <div class="col-span-8 sm:hidden">
+            <div
+              id="currentCat"
+              class="truncate text-sm font-semibold opacity-90"
+            ></div>
+          </div>
+
+          <!-- Controles desktop -->
+          <div class="hidden sm:flex col-span-6 justify-end gap-2">
+            <input
+              id="search"
+              type="search"
+              inputmode="search"
+              placeholder="Buscar platos o ingredientes"
+              class="px-3 py-2 w-72 rounded-xl bg-neutral-900 border border-white/10 focus:outline-none focus:ring text-sm placeholder:text-neutral-400"
             />
-          </button>
+            <div class="relative">
+              <button
+                id="openCatMenuDesk"
+                class="px-3 py-2 rounded-xl bg-neutral-900 border border-white/10 text-sm"
+              >
+                Categorias
+              </button>
+              <div
+                id="catMenuDesk"
+                class="hidden absolute right-0 mt-2 w-64 rounded-xl bg-neutral-950 border border-white/10 shadow-xl overflow-hidden"
+              ></div>
+            </div>
+          </div>
         </div>
 
-        <!-- Categorias (menu hamburguesa) -->
-        <div class="col-span-2 sm:col-span-3">
-          <button
-            id="openCatMenu"
-            class="w-10 h-10 grid place-content-center rounded-xl bg-[var(--bg)] border border-white/10"
-          >
-            <img
-              src="assets/img/menu-icon.svg"
-              class="w-[20px] h-[20px]"
-              alt="Categorias"
-            />
-          </button>
-        </div>
+        <!-- Tabs horizontales de categorias -->
+        <nav
+          id="catTabs"
+          class="mx-auto max-w-5xl px-2 sm:px-4 pb-2 overflow-x-auto no-scrollbar flex gap-4"
+        ></nav>
 
-        <!-- Titulo de la categoria actual (solo movil) -->
-        <div class="col-span-8 sm:hidden">
+        <!-- Panel de busqueda superpuesto al actionBar -->
+        <div
+          id="searchPanel"
+          class="hidden inset-0 px-3 sm:px-4 py-3 z-40 bg-[var(--bg)] backdrop-blur border-b border-white/10"
+          style="border: none"
+        >
+          <div class="mx-auto max-w-5xl">
+            <div
+              id="inputPanel"
+              class="h-12 rounded-[14px] flex items-center pl-4 shadow-lg"
+            >
+              <span class="inline-block h-3 w-3 rounded-full mr-2"></span>
+              <input
+                id="searchUnified"
+                type="search"
+                inputmode="search"
+                placeholder="Buscar platos, ingredientes o categorias"
+                class="flex-1 bg-transparent border-0 focus:outline-none text-sm placeholder:text-neutral-400"
+              />
+              <button
+                id="clearSearch"
+                class="ml-0 h-[45px] w-[45px] grid place-content-center bg-neutral-800 border border-white/10 text-base"
+              >
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Menu de categorias (overlay movil) -->
+      <div id="catMenuOverlay" class="fixed inset-0 hidden z-40">
+        <div class="absolute inset-0 bg-black/50" data-close="overlay"></div>
+        <div class="absolute inset-0 flex items-start justify-center pt-20 px-3">
           <div
-            id="currentCat"
-            class="truncate text-sm font-semibold opacity-90"
-          ></div>
+            class="w-full max-w-md rounded-xl bg-neutral-950 border border-white/10 shadow-xl overflow-hidden"
+          >
+            <div id="catMenu" class="py-1 max-h-[70vh] overflow-y-auto"></div>
+          </div>
         </div>
+      </div>
 
-        <!-- Controles desktop -->
-        <div class="hidden sm:flex col-span-6 justify-end gap-2">
+      <!-- Buscador expandible movil -->
+      <div id="searchOverlay" class="fixed inset-0 hidden z-40">
+        <div class="absolute inset-0 bg-black/50" data-close="overlay"></div>
+        <div
+          class="absolute left-3 right-3 top-20 rounded-xl bg-neutral-950 border border-white/10 shadow-xl p-3"
+        >
           <input
-            id="search"
+            id="searchMobile"
             type="search"
             inputmode="search"
             placeholder="Buscar platos o ingredientes"
-            class="px-3 py-2 w-72 rounded-xl bg-neutral-900 border border-white/10 focus:outline-none focus:ring text-sm placeholder:text-neutral-400"
+            class="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/10 focus:outline-none focus:ring text-sm placeholder:text-neutral-400"
           />
-          <div class="relative">
-            <button
-              id="openCatMenuDesk"
-              class="px-3 py-2 rounded-xl bg-neutral-900 border border-white/10 text-sm"
-            >
-              Categorias
-            </button>
-            <div
-              id="catMenuDesk"
-              class="hidden absolute right-0 mt-2 w-64 rounded-xl bg-neutral-950 border border-white/10 shadow-xl overflow-hidden"
-            ></div>
-          </div>
         </div>
       </div>
 
-      <!-- Tabs horizontales de categorias -->
-      <nav
-        id="catTabs"
-        class="mx-auto max-w-5xl px-2 sm:px-4 pb-2 overflow-x-auto no-scrollbar flex gap-4"
-      ></nav>
-
-      <!-- Panel de busqueda superpuesto al actionBar -->
-      <div
-        id="searchPanel"
-        class="hidden inset-0 px-3 sm:px-4 py-3 z-40 bg-[var(--bg)] backdrop-blur border-b border-white/10"
-        style="border: none"
-      >
-        <div class="mx-auto max-w-5xl">
-          <div
-            id="inputPanel"
-            class="h-12 rounded-[14px] flex items-center pl-4 shadow-lg"
-          >
-            <span class="inline-block h-3 w-3 rounded-full mr-2"></span>
-            <input
-              id="searchUnified"
-              type="search"
-              inputmode="search"
-              placeholder="Buscar platos, ingredientes o categorias"
-              class="flex-1 bg-transparent border-0 focus:outline-none text-sm placeholder:text-neutral-400"
-            />
-            <button
-              id="clearSearch"
-              class="ml-0 h-[45px] w-[45px] grid place-content-center bg-neutral-800 border border-white/10 text-base"
-            >
-              <img src="assets/img/close.svg" alt="Cerrar" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Menu de categorias (overlay movil) -->
-    <div id="catMenuOverlay" class="fixed inset-0 hidden z-40">
-      <div class="absolute inset-0 bg-black/50" data-close="overlay"></div>
-      <div class="absolute inset-0 flex items-start justify-center pt-20 px-3">
-        <div
-          class="w-full max-w-md rounded-xl bg-neutral-950 border border-white/10 shadow-xl overflow-hidden"
-        >
-          <div id="catMenu" class="py-1 max-h-[70vh] overflow-y-auto"></div>
-        </div>
-      </div>
+      <!-- CONTENIDO: secciones por categoria -->
+      <main
+        id="content"
+        class="mx-auto max-w-5xl px-3 sm:px-4 py-4 sm:py-6 space-y-8"
+      ></main>
     </div>
-
-    <!-- Buscador expandible movil -->
-    <div id="searchOverlay" class="fixed inset-0 hidden z-40">
-      <div class="absolute inset-0 bg-black/50" data-close="overlay"></div>
-      <div
-        class="absolute left-3 right-3 top-20 rounded-xl bg-neutral-950 border border-white/10 shadow-xl p-3"
-      >
-        <input
-          id="searchMobile"
-          type="search"
-          inputmode="search"
-          placeholder="Buscar platos o ingredientes"
-          class="w-full px-3 py-2 rounded-xl bg-neutral-900 border border-white/10 focus:outline-none focus:ring text-sm placeholder:text-neutral-400"
-        />
-      </div>
-    </div>
-
-    <!-- CONTENIDO: secciones por categoria -->
-    <main
-      id="content"
-      class="mx-auto max-w-5xl px-3 sm:px-4 py-4 sm:py-6 space-y-8"
-    ></main>
 
     <!-- MODAL DETALLE (pantalla completa) -->
     <div id="detailModal" class="fixed inset-0 hidden z-50">
