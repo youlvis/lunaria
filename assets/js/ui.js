@@ -157,7 +157,7 @@ const UI = (() => {
       <div class="mx-auto max-w-5xl">
         <div id="inputPanel" class="h-12 rounded-[14px] flex items-center pl-2 pr-2 shadow-lg">
           <span class="inline-block h-3 w-3 rounded-full bg-[var(--accent)] mr-2"></span>
-          <input id="searchUnified" type="search" inputmode="search" placeholder="Buscar platos, ingredientes o categorias"
+          <input id="searchUnified" type="text" inputmode="search" placeholder="Buscar platos, ingredientes o categorias"
             class="flex-1 bg-transparent border-0 focus:outline-none text-[0.8rem] leading-[1.25rem] placeholder:text-neutral-400" />
           <button id="clearSearch" class="w-[32px] h-[32px] rounded-[10px] bg-[var(--bg)] flex items-center justify-center">
            <img src="assets/img/icon-close.svg" class="w-[15px]" alt="Cerrar" />
@@ -195,6 +195,7 @@ const UI = (() => {
     applySearch();
   }
 
+  // Buscador con prioridad por nombre del plato
   function applySearch() {
     ensureSearchOverlay();
     const raw = (
@@ -203,8 +204,11 @@ const UI = (() => {
       ""
     ).trim();
     const q = norm(raw);
-    const sections = $$("#content .cat-section");
-    // const status = $("#searchStatus");
+    const sections = Array.from(
+      document.querySelectorAll("#content .cat-section")
+    );
+    const container = document.getElementById("content");
+
     let emptyBanner = document.getElementById("noResults");
     if (!emptyBanner) {
       emptyBanner = document.createElement("div");
@@ -216,63 +220,353 @@ const UI = (() => {
     }
     let matches = 0;
 
-    sections.forEach((sec) => {
+    sections.forEach((sec, secIdx) => {
       const heading = sec.querySelector(".h-cat")?.textContent || "";
       const rows = Array.from(sec.querySelectorAll(".item-row"));
+
+      // Guardar orden original de secciones y filas
+      if (!sec.dataset.sectionIndex) sec.dataset.sectionIndex = String(secIdx);
+      rows.forEach((row, idx) => {
+        if (!row.dataset.orderIndex) row.dataset.orderIndex = String(idx);
+      });
+
       if (!q) {
         sec.style.display = "";
-        rows.forEach((row) => (row.style.display = ""));
-        // restaurar márgenes por si fueron modificados
+        rows.forEach((row) => {
+          row.style.display = "";
+        });
+        // restaurar orden original de filas
+        const parent = rows[0]?.parentNode;
+        if (parent) {
+          const ordered = [...rows].sort(
+            (a, b) =>
+              Number(a.dataset.orderIndex || 0) -
+              Number(b.dataset.orderIndex || 0)
+          );
+          ordered.forEach((row) => parent.appendChild(row));
+        }
+        sec.dataset.searchScore = "0";
         sec.style.marginTop = "";
         return;
       }
+
       const headingMatch = norm(heading).includes(q);
       let sectionMatch = false;
+      let sectionScore = 0;
+
       rows.forEach((row) => {
-        const cache =
+        const titleText = norm(
+          row.querySelector(".row-title")?.textContent || ""
+        );
+        const fullText =
           row.dataset.searchText ||
           (row.dataset.searchText = norm(row.textContent));
-        const match = headingMatch || cache.includes(q);
-        row.style.display = match ? "" : "none";
-        if (match) sectionMatch = true;
+
+        const titleMatch = titleText.includes(q);
+        const textMatch = fullText.includes(q);
+
+        let score = 0;
+        if (titleMatch) score = 3; // nombre del plato
+        else if (textMatch) score = 2; // descripción / ingredientes
+        else if (headingMatch) score = 1; // solo por categoría
+
+        if (score > 0) {
+          row.style.display = "";
+          row.dataset.searchScore = String(score);
+          sectionMatch = true;
+          if (score > sectionScore) sectionScore = score;
+        } else {
+          row.style.display = "none";
+          row.dataset.searchScore = "0";
+        }
       });
+
       sec.style.display = sectionMatch ? "" : "none";
-      if (sectionMatch) matches++;
+      sec.dataset.searchScore = String(sectionScore);
+
+      if (sectionMatch) {
+        const parent = rows[0]?.parentNode;
+        if (parent) {
+          const visibleRows = rows.filter(
+            (row) => row.style.display !== "none"
+          );
+          visibleRows
+            .sort((a, b) => {
+              const sa = Number(a.dataset.searchScore || 0);
+              const sb = Number(b.dataset.searchScore || 0);
+              if (sa !== sb) return sb - sa; // primero mayor score (nombre)
+              return (
+                Number(a.dataset.orderIndex || 0) -
+                Number(b.dataset.orderIndex || 0)
+              );
+            })
+            .forEach((row) => parent.appendChild(row));
+        }
+        matches++;
+      }
     });
 
-    // corregir salto visual: quitar margen superior al primer bloque visible
+    // Reordenar secciones según mejor coincidencia
+    if (q && container) {
+      const visibleSections = sections.filter(
+        (sec) => sec.style.display !== "none"
+      );
+      visibleSections
+        .sort((a, b) => {
+          const sa = Number(a.dataset.searchScore || 0);
+          const sb = Number(b.dataset.searchScore || 0);
+          if (sa !== sb) return sb - sa;
+          return (
+            Number(a.dataset.sectionIndex || 0) -
+            Number(b.dataset.sectionIndex || 0)
+          );
+        })
+        .forEach((sec) => container.appendChild(sec));
+    } else if (!q && container) {
+      // restaurar orden original de secciones
+      sections
+        .slice()
+        .sort(
+          (a, b) =>
+            Number(a.dataset.sectionIndex || 0) -
+            Number(b.dataset.sectionIndex || 0)
+        )
+        .forEach((sec) => container.appendChild(sec));
+    }
+
+    // corregir salto visual del primer bloque visible
     if (q) {
-      const visible = sections.filter((sec) => sec.style.display !== "none");
-      visible.forEach((sec, idx) => {
-        if (idx === 0) sec.style.marginTop = "0px";
-        else sec.style.marginTop = "";
+      const visibleSecs = sections.filter(
+        (sec) => sec.style.display !== "none"
+      );
+      visibleSecs.forEach((sec, idx) => {
+        sec.style.marginTop = idx === 0 ? "0px" : "";
       });
     }
 
     if (emptyBanner) {
       if (!q) {
-        // status.textContent = "";
-        // status.classList.add("hidden");
-        if (emptyBanner) emptyBanner.classList.add("hidden");
+        emptyBanner.classList.add("hidden");
       } else if (!matches) {
-        // status.textContent = `Sin resultados para “${raw}”.`;
-        // status.classList.remove("hidden");
-        if (emptyBanner) {
-          emptyBanner.textContent = `No encontramos coincidencias con “${raw}”. Prueba con otro término o revisa las categorías.`;
-          emptyBanner.classList.remove("hidden");
-        }
+        emptyBanner.textContent = `No encontramos coincidencias con "${raw}". Prueba con otro término o revisa las categorías.`;
+        emptyBanner.classList.remove("hidden");
       } else {
-        // status.textContent = "";
-        // status.classList.add("hidden");
-        if (emptyBanner) emptyBanner.classList.add("hidden");
+        emptyBanner.classList.add("hidden");
       }
     }
   }
 
+  // function applySearch() {
+  //   ensureSearchOverlay();
+  //   const raw = (
+  //     $("#searchUnified")?.value ||
+  //     $("#search")?.value ||
+  //     ""
+  //   ).trim();
+  //   const q = norm(raw);
+  //   const sections = $$("#content .cat-section");
+  //   // const status = $("#searchStatus");
+  //   let emptyBanner = document.getElementById("noResults");
+  //   if (!emptyBanner) {
+  //     emptyBanner = document.createElement("div");
+  //     emptyBanner.id = "noResults";
+  //     emptyBanner.className =
+  //       "hidden mx-auto max-w-5xl px-3 sm:px-4 mt-4 text-sm text-neutral-400";
+  //     const content = document.getElementById("content");
+  //     content?.parentNode?.insertBefore(emptyBanner, content.nextSibling);
+  //   }
+  //   let matches = 0;
+
+  //   sections.forEach((sec) => {
+  //     const heading = sec.querySelector(".h-cat")?.textContent || "";
+  //     const rows = Array.from(sec.querySelectorAll(".item-row"));
+  //     if (!q) {
+  //       sec.style.display = "";
+  //       rows.forEach((row) => (row.style.display = ""));
+  //       // restaurar márgenes por si fueron modificados
+  //       sec.style.marginTop = "";
+  //       return;
+  //     }
+  //     const headingMatch = norm(heading).includes(q);
+  //     let sectionMatch = false;
+  //     rows.forEach((row) => {
+  //       const cache =
+  //         row.dataset.searchText ||
+  //         (row.dataset.searchText = norm(row.textContent));
+  //       const match = headingMatch || cache.includes(q);
+  //       row.style.display = match ? "" : "none";
+  //       if (match) sectionMatch = true;
+  //     });
+  //     sec.style.display = sectionMatch ? "" : "none";
+  //     if (sectionMatch) matches++;
+  //   });
+
+  //   // corregir salto visual: quitar margen superior al primer bloque visible
+  //   if (q) {
+  //     const visible = sections.filter((sec) => sec.style.display !== "none");
+  //     visible.forEach((sec, idx) => {
+  //       if (idx === 0) sec.style.marginTop = "0px";
+  //       else sec.style.marginTop = "";
+  //     });
+  //   }
+
+  //   if (emptyBanner) {
+  //     if (!q) {
+  //       // status.textContent = "";
+  //       // status.classList.add("hidden");
+  //       if (emptyBanner) emptyBanner.classList.add("hidden");
+  //     } else if (!matches) {
+  //       // status.textContent = `Sin resultados para “${raw}”.`;
+  //       // status.classList.remove("hidden");
+  //       if (emptyBanner) {
+  //         emptyBanner.textContent = `No encontramos coincidencias con “${raw}”. Prueba con otro término o revisa las categorías.`;
+  //         emptyBanner.classList.remove("hidden");
+  //       }
+  //     } else {
+  //       // status.textContent = "";
+  //       // status.classList.add("hidden");
+  //       if (emptyBanner) emptyBanner.classList.add("hidden");
+  //     }
+  //   }
+  // }
+
+  // Nuevo buscador con prioridad por nombre del plato
+  // function applySearch() {
+  //   ensureSearchOverlay();
+  //   const raw = (
+  //     $("#searchUnified")?.value ||
+  //     $("#search")?.value ||
+  //     ""
+  //   ).trim();
+  //   const q = norm(raw);
+  //   const sections = $$("#content .cat-section");
+
+  //   let emptyBanner = document.getElementById("noResults");
+  //   if (!emptyBanner) {
+  //     emptyBanner = document.createElement("div");
+  //     emptyBanner.id = "noResults";
+  //     emptyBanner.className =
+  //       "hidden mx-auto max-w-5xl px-3 sm:px-4 mt-4 text-sm text-neutral-400";
+  //     const content = document.getElementById("content");
+  //     content?.parentNode?.insertBefore(emptyBanner, content.nextSibling);
+  //   }
+  //   let matches = 0;
+
+  //   sections.forEach((sec) => {
+  //     const heading = sec.querySelector(".h-cat")?.textContent || "";
+  //     const rows = Array.from(sec.querySelectorAll(".item-row"));
+
+  //     // Guardar orden original
+  //     rows.forEach((row, idx) => {
+  //       if (row.dataset.orderIndex === undefined) {
+  //         row.dataset.orderIndex = String(idx);
+  //       }
+  //     });
+
+  //     if (!q) {
+  //       sec.style.display = "";
+  //       rows.forEach((row) => {
+  //         row.style.display = "";
+  //       });
+  //       // restaurar orden original
+  //       const parent = rows[0]?.parentNode;
+  //       if (parent) {
+  //         const ordered = [...rows].sort(
+  //           (a, b) =>
+  //             Number(a.dataset.orderIndex || 0) -
+  //             Number(b.dataset.orderIndex || 0)
+  //         );
+  //         ordered.forEach((row) => parent.appendChild(row));
+  //       }
+  //       sec.style.marginTop = "";
+  //       return;
+  //     }
+
+  //     const headingMatch = norm(heading).includes(q);
+  //     let sectionMatch = false;
+
+  //     rows.forEach((row) => {
+  //       const titleText = norm(
+  //         row.querySelector(".row-title")?.textContent || ""
+  //       );
+  //       const cache =
+  //         row.dataset.searchText ||
+  //         (row.dataset.searchText = norm(row.textContent));
+
+  //       const titleMatch = titleText.includes(q);
+  //       const textMatch = cache.includes(q);
+
+  //       let score = 0;
+  //       if (titleMatch) score = 3;
+  //       else if (textMatch) score = 2;
+  //       else if (headingMatch) score = 1;
+
+  //       if (score > 0) {
+  //         row.style.display = "";
+  //         row.dataset.searchScore = String(score);
+  //         sectionMatch = true;
+  //       } else {
+  //         row.style.display = "none";
+  //         row.dataset.searchScore = "0";
+  //       }
+  //     });
+
+  //     sec.style.display = sectionMatch ? "" : "none";
+
+  //     if (sectionMatch) {
+  //       const parent = rows[0]?.parentNode;
+  //       if (parent) {
+  //         const visibleRows = rows.filter(
+  //           (row) => row.style.display !== "none"
+  //         );
+  //         visibleRows
+  //           .sort((a, b) => {
+  //             const sa = Number(a.dataset.searchScore || 0);
+  //             const sb = Number(b.dataset.searchScore || 0);
+  //             if (sa !== sb) return sb - sa;
+  //             return (
+  //               Number(a.dataset.orderIndex || 0) -
+  //               Number(b.dataset.orderIndex || 0)
+  //             );
+  //           })
+  //           .forEach((row) => parent.appendChild(row));
+  //       }
+  //       matches++;
+  //     }
+  //   });
+
+  //   // corregir salto visual: quitar margen superior al primer bloque visible
+  //   if (q) {
+  //     const visible = sections.filter((sec) => sec.style.display !== "none");
+  //     visible.forEach((sec, idx) => {
+  //       if (idx === 0) sec.style.marginTop = "0px";
+  //       else sec.style.marginTop = "";
+  //     });
+  //   }
+
+  //   if (emptyBanner) {
+  //     if (!q) {
+  //       emptyBanner.classList.add("hidden");
+  //     } else if (!matches) {
+  //       emptyBanner.textContent = `No encontramos coincidencias con "${raw}". Prueba con otro término o revisa las categorías.`;
+  //       emptyBanner.classList.remove("hidden");
+  //     } else {
+  //       emptyBanner.classList.add("hidden");
+  //     }
+  //   }
+  // }
+
   // ---------- Modal ----------
+  let lastDetailScrollY = 0;
+
   function openDetail(id) {
     const it = Store.state.items.find((x) => String(x.id) === String(id));
     if (!it) return;
+    lastDetailScrollY =
+      window.pageYOffset ||
+      document.documentElement.scrollTop ||
+      document.body.scrollTop ||
+      0;
     if ($("#detailImg")) $("#detailImg").src = it.foto || "";
     if ($("#detailName")) $("#detailName").textContent = it.nombre || "";
     if ($("#detailDesc")) $("#detailDesc").textContent = it.descripcion || "";
@@ -287,6 +581,9 @@ const UI = (() => {
   function toggleDetail(open) {
     $("#detailModal")?.classList.toggle("hidden", !open);
     document.body.classList.toggle("detail-open", open);
+    if (!open && typeof window !== "undefined") {
+      window.scrollTo({ top: lastDetailScrollY, behavior: "auto" });
+    }
   }
 
   // ---------- Overlays ----------
