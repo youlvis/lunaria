@@ -1,21 +1,21 @@
-/* ===================================================
-   THEME – Olivo Minimal Premium
+﻿/* ===================================================
+   THEME â€“ Olivo Minimal Premium
    =================================================== */
 
 :root {
   color-scheme: dark;
   --sticky-offset: 0px;
 
-  /* 🎨 Paleta base */
+  /* ðŸŽ¨ Paleta base */
   --col-verde-oscuro: #283618; /* Fondo general */
   --col-verde-oliva: #606c38; /* Texto destacado */
   --col-crema: #fefae0; /* Superficies claras */
   --col-dorado: #dda15e; /* Acento premium */
-  --col-terracota: #bc6c25; /* CTA “Añadir” */
+  --col-terracota: #bc6c25; /* CTA â€œAÃ±adirâ€ */
   --col-verde-gris: #afc2ba; /* Texto secundario */
   --col-sombra: rgba(0, 0, 0, 0.25);
 
-  /* Tokens semánticos */
+  /* Tokens semÃ¡nticos */
   --bg: var(--col-verde-oscuro);
   --surface-1: rgba(255, 255, 255, 0.06); /* Overlays */
   --surface-2: var(--col-crema); /* Tarjetas, miniaturas */
@@ -53,7 +53,6 @@ section.cat-section {
 }
 
 /* Inputs/buttons (Touch targets) */
-button,
 a,
 select,
 input {
@@ -61,11 +60,11 @@ input {
 }
 
 /* ===================================================
-   ACTION BAR / HERO / TIPOGRAFÍA
+   ACTION BAR / HERO / TIPOGRAFÃA
    =================================================== */
 
 #actionBar {
-  background-color: var(--bg) !important;
+  background-color: var(--surface-1) !important;
   border-color: var(--border) !important;
   box-shadow: 0 1px 0 var(--col-sombra);
   color: var(--text) !important;
@@ -81,11 +80,11 @@ input {
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  color: var(--accent);
+  color: var(--text);
 }
 
 /* ===================================================
-   TABS DE CATEGORÍAS
+   TABS DE CATEGORÃAS
    =================================================== */
 
 .tab-underline {
@@ -115,11 +114,14 @@ input {
 
 .item-row {
   display: grid;
-  grid-template-columns: 1fr 68px;
-  gap: 10px;
+  grid-template-columns: 68px 1fr; /* imagen izquierda */
+  gap: 12px;
   align-items: center;
-  border-bottom: 1px solid var(--border);
-  padding: 10px 0;
+  background: var(--surface-1);
+  /* border: 1px solid var(--border); */
+  border-radius: 14px;
+  padding: 10px 12px;
+  box-shadow: 0 2px 6px var(--col-sombra);
 }
 
 .row-title {
@@ -133,12 +135,7 @@ input {
   color: var(--muted);
 }
 
-.row-price {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--accent-weak);
-  margin-top: 3px;
-}
+.row-price { font-size: 14px; font-weight: 700; color: var(--accent-weak); margin-top: 3px; }
 
 /* Miniaturas */
 .thumb {
@@ -149,6 +146,7 @@ input {
   border: 1px solid var(--border);
   overflow: hidden;
 }
+.item-row > .thumb { order: -1; }
 
 .thumb img {
   width: 100%;
@@ -177,7 +175,7 @@ input {
 .skeleton {
   height: 64px;
   border-radius: 12px;
-  background: linear-gradient(90deg, #ded9c0 25%, #f2ead2 37%, #ded9c0 63%);
+  background: linear-gradient(90deg, #f3ead4 25%, #fff6e8 37%, #f3ead4 63%);
   background-size: 400% 100%;
   animation: shimmer 1.4s ease infinite;
 }
@@ -195,7 +193,13 @@ input {
    BUSCADOR
    =================================================== */
 
-#searchPanel .rounded-full {
+/* #searchPanel .rounded-full {
+  background: var(--surface-2) !important;
+  border-color: var(--border) !important;
+  color: var(--text);
+} */
+
+#inputPanel {
   background: var(--surface-2) !important;
   border-color: var(--border) !important;
   color: var(--text);
@@ -213,7 +217,7 @@ input {
 #searchOverlay .bg-neutral-950,
 #detailModal .bg-neutral-950 {
   background-color: var(--surface-1) !important;
-  border-color: var(--border) !important;
+  /* border-color: var(--border) !important; */
 }
 
 #detailModal h3 {
@@ -222,3 +226,23 @@ input {
 #detailModal p {
   color: var(--muted);
 }
+
+.item-row:hover { box-shadow: 0 4px 12px var(--col-sombra); }
+
+/* ====== THEME OVERRIDE: Azul petróleo + dorado ======
+   Ajusta aquí si quieres variar la tonalidad sin tocar componentes */
+:root {
+  color-scheme: light;
+  /* Paleta principal */
+  --bg: #f0e5c3;         /* crema claro: fondo principal */
+  --surface-1: #f7efd8;  /* beige cálido: cards/secciones */
+  --surface-2: #fff7ea;  /* crema inputs */
+  --text: #39646d;       /* azul petróleo oscuro: títulos/texto principal */
+  --muted: #7d9093;      /* gris azulado: texto secundario */
+  --border: rgba(0,0,0,.12);
+  --accent: #ba946e;     /* dorado suave: acentos */
+  --accent-weak: #476779;/* azul gris medio: estados secundarios/soporte */
+  --col-sombra: rgba(0,0,0,.08);
+}
+
+

@@ -10,6 +10,10 @@
     <meta name="theme-color" content="#0b0b0c" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="assets/css/styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
   </head>
 
   <body class="bg-neutral-950 text-neutral-50">
@@ -18,23 +22,24 @@
       <div class="h-40 sm:h-56 w-full overflow-hidden">
         <img
           id="heroImg"
-          src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=1600&fit=crop"
+          src="https://res.cloudinary.com/dh2byewas/image/upload/ar_16:9,c_crop,g_north_west,h_1165,w_1537,y_733/c_auto,h_160,w_360/IMG_6007_otxh3l.jpg"
           alt=""
           class="w-full h-full object-cover opacity-70"
         />
       </div>
       <div class="absolute inset-0 flex flex-col items-center justify-center">
-        <img
+        <!-- <img
           id="logo"
           class="w-16 h-16 rounded-xl object-cover ring-1 ring-white/40 shadow"
           alt="Logo"
-        />
-        <h1
+        /> -->
+        <!-- <h1
           id="brand"
           class="mt-3 text-xl sm:text-2xl font-extrabold drop-shadow"
         >
           NOMBRE DEL RESTAURANTE
-        </h1>
+        </h1> -->
+        <img src="assets/img/logo-icon.svg" class="shadow h-[100%]" alt="Lunaria" />
       </div>
     </header>
 
@@ -43,16 +48,21 @@
       id="actionBar"
       class="sticky top-0 z-30 bg-neutral-950/90 backdrop-blur border-b border-white/10 relative"
     >
-      <div id="optionsBar"
+      <div
+        id="optionsBar"
         class="mx-auto max-w-5xl px-3 sm:px-4 py-3 grid grid-cols-12 gap-2 items-center"
       >
         <!-- Buscar -->
         <div class="col-span-2 sm:col-span-3">
           <button
             id="openSearch"
-            class="w-10 h-10 grid place-content-center rounded-xl bg-neutral-900 border border-white/10"
+            class="w-10 h-10 grid place-content-center rounded-xl border border-white/10 bg-[var(--bg)]"
           >
-            <span class="sr-only">Buscar</span> &#128269;
+            <img
+              src="assets/img/search.svg"
+              class="w-[20px] h-[20px]"
+              alt="Buscar"
+            />
           </button>
         </div>
 
@@ -60,9 +70,13 @@
         <div class="col-span-2 sm:col-span-3">
           <button
             id="openCatMenu"
-            class="w-10 h-10 grid place-content-center rounded-xl bg-neutral-900 border border-white/10"
+            class="w-10 h-10 grid place-content-center rounded-xl bg-[var(--bg)] border border-white/10"
           >
-            <span class="sr-only">Categorias</span> &#9776;
+            <img
+              src="assets/img/menu-icon.svg"
+              class="w-[20px] h-[20px]"
+              alt="Categorias"
+            />
           </button>
         </div>
 
@@ -107,16 +121,15 @@
       <!-- Panel de busqueda superpuesto al actionBar -->
       <div
         id="searchPanel"
-        class="hidden inset-0 px-3 sm:px-4 py-3 z-40 bg-neutral-950/95 backdrop-blur border-b border-white/10"
+        class="hidden inset-0 px-3 sm:px-4 py-3 z-40 bg-[var(--bg)] backdrop-blur border-b border-white/10"
         style="border: none"
       >
         <div class="mx-auto max-w-5xl">
           <div
-            class="h-12 rounded-full bg-neutral-900 border border-white/10 flex items-center pl-4 shadow-lg"
+            id="inputPanel"
+            class="h-12 rounded-[14px] flex items-center pl-4 shadow-lg"
           >
-            <span
-              class="inline-block h-3 w-3 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 mr-2"
-            ></span>
+            <span class="inline-block h-3 w-3 rounded-full mr-2"></span>
             <input
               id="searchUnified"
               type="search"
@@ -126,9 +139,9 @@
             />
             <button
               id="clearSearch"
-              class="ml-0 h-[45px] w-[45px] grid place-content-center rounded-full bg-neutral-800 border border-white/10 text-base"
+              class="ml-0 h-[45px] w-[45px] grid place-content-center bg-neutral-800 border border-white/10 text-base"
             >
-              &times;
+              <img src="assets/img/close.svg" alt="Cerrar" />
             </button>
           </div>
         </div>
@@ -173,13 +186,17 @@
     <div id="detailModal" class="fixed inset-0 hidden z-50">
       <div class="absolute inset-0 bg-black/70" data-close="modal"></div>
       <div
-        class="absolute inset-0 sm:inset-y-10 sm:inset-x-10 rounded-none sm:rounded-2xl overflow-hidden bg-neutral-950 border border-white/10 shadow-2xl"
+        class="absolute inset-0 sm:inset-y-10 sm:inset-x-10 rounded-none sm:rounded-2xl overflow-hidden bg-neutral-950 shadow-2xl"
       >
         <button
           id="closeDetail"
-          class="absolute top-3 right-3 z-10 w-10 h-10 grid place-content-center rounded-xl bg-neutral-900/80 border border-white/10"
+          class="absolute top-3 right-3 z-10 w-10 h-10 grid place-content-center rounded-xl bg-neutral-900 border border-white/10"
         >
-          &times;
+          <img
+            src="assets/img/close-icon.svg"
+            class="w-[20px] h-[20px]"
+            alt="Cerrar"
+          />
         </button>
         <div class="h-[55vh] sm:h-[60vh] w-full overflow-hidden bg-neutral-900">
           <img
@@ -211,14 +228,14 @@
     <!-- PRELOADER: visible hasta que el servicio responda -->
     <div
       id="preloader"
-      class="fixed inset-0 z-50 grid place-items-center bg-neutral-950"
+      class="fixed inset-0 z-50 grid place-items-center bg-[var(--surface-2)]"
     >
       <div class="flex flex-col items-center gap-3">
         <div
-          class="h-10 w-10 rounded-full border-4 border-neutral-700 border-t-green-400 animate-spin"
+          class="h-10 w-10 rounded-full border-4 border-[var(--muted)] border-t-[var(--accent)] animate-spin"
           aria-hidden="true"
         ></div>
-        <p class="text-sm text-neutral-300" role="status">Cargando menú...</p>
+        <p class="text-sm text-var" role="status">Cargando menú...</p>
       </div>
     </div>
   </body>

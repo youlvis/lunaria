@@ -6,7 +6,7 @@
     Store.state.items = (data.items || []).filter(i => i && i.nombre);
     Store.state.cfg = data.config || {};
 
-    UI.renderHeaderBrand(Store.state.cfg);
+    // UI.renderHeaderBrand(Store.state.cfg);
 
     const grouped = UI.groupByCategory(Store.state.items);
     UI.buildTabs(grouped.cats);

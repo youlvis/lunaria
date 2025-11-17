@@ -5,12 +5,12 @@ const UI = (() => {
   const $$ = (s) => Array.from(document.querySelectorAll(s));
 
   // ---------- Marca / imágenes ----------
-  function renderHeaderBrand(cfg) {
-    $("#brand") &&
-      ($("#brand").textContent = cfg?.nombre_restaurante || "Menú");
-    if (cfg?.logo_url && $("#logo")) $("#logo").src = cfg.logo_url;
-    if (cfg?.hero_url && $("#heroImg")) $("#heroImg").src = cfg.hero_url;
-  }
+  // function renderHeaderBrand(cfg) {
+  //   $("#brand") &&
+  //     ($("#brand").textContent = cfg?.nombre_restaurante || "Menú");
+  //   if (cfg?.logo_url && $("#logo")) $("#logo").src = cfg.logo_url;
+  //   if (cfg?.hero_url && $("#heroImg")) $("#heroImg").src = cfg.hero_url;
+  // }
 
   // ---------- Agrupar por categoría respetando el ORDEN DEL SHEET ----------
   function groupByCategory(items) {
@@ -155,13 +155,14 @@ const UI = (() => {
     if (!panel || panel.dataset.simple === "true") return;
     panel.innerHTML = `
       <div class="mx-auto max-w-5xl">
-        <div class="h-12 rounded-full bg-neutral-900 border border-white/10 flex items-center pl-4 shadow-lg">
-          <span class="inline-block h-3 w-3 rounded-full bg-gradient-to-r from-fuchsia-500 to-cyan-400 mr-2"></span>
+        <div id="inputPanel" class="h-12 rounded-[14px] flex items-center pl-2 pr-2 shadow-lg">
+          <span class="inline-block h-3 w-3 rounded-full bg-[var(--accent)] mr-2"></span>
           <input id="searchUnified" type="search" inputmode="search" placeholder="Buscar platos, ingredientes o categorias"
             class="flex-1 bg-transparent border-0 focus:outline-none text-[0.8rem] leading-[1.25rem] placeholder:text-neutral-400" />
-          <button id="clearSearch" class="ml-0 h-[45px] w-[45px] grid place-content-center rounded-full bg-neutral-800 border border-white/10 text-base">&times;</button>
+          <button id="clearSearch" class="w-[32px] h-[32px] rounded-[10px] bg-[var(--bg)] flex items-center justify-center">
+           <img src="assets/img/icon-close.svg" class="w-[15px]" alt="Cerrar" />
+           </button>
         </div>
-        <p id="searchStatus" class="hidden mt-2 text-sm text-neutral-400"></p>
       </div>
     `;
     panel.dataset.simple = "true";
@@ -203,7 +204,7 @@ const UI = (() => {
     ).trim();
     const q = norm(raw);
     const sections = $$("#content .cat-section");
-    const status = $("#searchStatus");
+    // const status = $("#searchStatus");
     let emptyBanner = document.getElementById("noResults");
     if (!emptyBanner) {
       emptyBanner = document.createElement("div");
@@ -248,21 +249,21 @@ const UI = (() => {
       });
     }
 
-    if (status) {
+    if (emptyBanner) {
       if (!q) {
-        status.textContent = "";
-        status.classList.add("hidden");
+        // status.textContent = "";
+        // status.classList.add("hidden");
         if (emptyBanner) emptyBanner.classList.add("hidden");
       } else if (!matches) {
-        status.textContent = `Sin resultados para “${raw}”.`;
-        status.classList.remove("hidden");
+        // status.textContent = `Sin resultados para “${raw}”.`;
+        // status.classList.remove("hidden");
         if (emptyBanner) {
-          emptyBanner.textContent = `No encontramos coincidencias. Prueba con otro término o revisa las categorías.`;
+          emptyBanner.textContent = `No encontramos coincidencias con “${raw}”. Prueba con otro término o revisa las categorías.`;
           emptyBanner.classList.remove("hidden");
         }
       } else {
-        status.textContent = "";
-        status.classList.add("hidden");
+        // status.textContent = "";
+        // status.classList.add("hidden");
         if (emptyBanner) emptyBanner.classList.add("hidden");
       }
     }
@@ -447,7 +448,7 @@ const UI = (() => {
 
   // ---------- API pública ----------
   return {
-    renderHeaderBrand,
+    // renderHeaderBrand,
     groupByCategory,
     buildTabs,
     buildCatMenus,
