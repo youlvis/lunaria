@@ -606,34 +606,45 @@ const UI = (() => {
     const sections = cats
       .map((c) => document.querySelector(`#sec-${slug(c)}`))
       .filter(Boolean);
-    const off = calcOffset();
+    if (!sections.length) return;
 
-    const obs = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (!visible) return;
-        if (programmaticNav) return;
-        setActiveBySectionId(visible.target.id, "smooth");
-      },
-      {
-        root: null,
-        rootMargin: `-${off + 10}px 0px -60% 0px`,
-        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1],
+    const updateActiveFromScroll = () => {
+      if (programmaticNav) return;
+      const off = calcOffset();
+      const viewportTop = off + 8; // mismo offset que goToCategory/smoothScrollTo
+
+      let current = sections[0];
+      for (const sec of sections) {
+        const rect = sec.getBoundingClientRect();
+        if (rect.top - viewportTop <= 0) {
+          // este bloque ya pas� por debajo de la barra fija
+          current = sec;
+        } else {
+          // los siguientes a�n est�n m�s abajo
+          break;
+        }
       }
-    );
 
-    sections.forEach((s) => obs.observe(s));
+      if (current) setActiveBySectionId(current.id, "smooth");
+    };
+
+    window.addEventListener("scroll", updateActiveFromScroll, {
+      passive: true,
+    });
+
     window.addEventListener(
       "resize",
       () => {
         calcOffset();
+        updateActiveFromScroll();
         const active = $("#catTabs button.active");
         if (active) ensureTabVisible(active, "auto");
       },
       { passive: true }
     );
+
+    // estado inicial
+    updateActiveFromScroll();
   }
 
   // ---------- Utils ----------
