@@ -1,32 +1,4 @@
 ﻿/* ===================================================
-   THEME â€“ Olivo Minimal Premium
-   =================================================== */
-
-:root {
-  color-scheme: dark;
-  --sticky-offset: 0px;
-
-  /* ðŸŽ¨ Paleta base */
-  --col-verde-oscuro: #283618; /* Fondo general */
-  --col-verde-oliva: #606c38; /* Texto destacado */
-  --col-crema: #fefae0; /* Superficies claras */
-  --col-dorado: #dda15e; /* Acento premium */
-  --col-terracota: #bc6c25; /* CTA â€œAÃ±adirâ€ */
-  --col-verde-gris: #afc2ba; /* Texto secundario */
-  --col-sombra: rgba(0, 0, 0, 0.25);
-
-  /* Tokens semÃ¡nticos */
-  --bg: var(--col-verde-oscuro);
-  --surface-1: rgba(255, 255, 255, 0.06); /* Overlays */
-  --surface-2: var(--col-crema); /* Tarjetas, miniaturas */
-  --text: var(--col-crema);
-  --muted: var(--col-verde-gris);
-  --border: rgba(255, 255, 255, 0.12);
-  --accent: var(--col-dorado);
-  --accent-weak: var(--col-terracota);
-}
-
-/* ===================================================
    BASE / GLOBAL
    =================================================== */
 
@@ -37,6 +9,10 @@ body {
 
 * {
   -webkit-tap-highlight-color: transparent;
+}
+
+.text-var {
+  color: var(--muted);
 }
 
 section.cat-section {
@@ -135,7 +111,12 @@ input {
   color: var(--muted);
 }
 
-.row-price { font-size: 14px; font-weight: 700; color: var(--accent-weak); margin-top: 3px; }
+.row-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-weak);
+  margin-top: 3px;
+}
 
 /* Miniaturas */
 .thumb {
@@ -146,7 +127,9 @@ input {
   border: 1px solid var(--border);
   overflow: hidden;
 }
-.item-row > .thumb { order: -1; }
+.item-row > .thumb {
+  order: -1;
+}
 
 .thumb img {
   width: 100%;
@@ -227,7 +210,9 @@ input {
   color: var(--muted);
 }
 
-.item-row:hover { box-shadow: 0 4px 12px var(--col-sombra); }
+.item-row:hover {
+  box-shadow: 0 4px 12px var(--col-sombra);
+}
 
 /* Cuando el detalle está abierto, ocultar la pantalla principal */
 body.detail-open #homeScreen {
@@ -238,16 +223,16 @@ body.detail-open #homeScreen {
    Ajusta aquí si quieres variar la tonalidad sin tocar componentes */
 :root {
   color-scheme: light;
+  --sticky-offset: 0px;
+
   /* Paleta principal */
-  --bg: #f0e5c3;         /* crema claro: fondo principal */
-  --surface-1: #f7efd8;  /* beige cálido: cards/secciones */
-  --surface-2: #fff7ea;  /* crema inputs */
-  --text: #39646d;       /* azul petróleo oscuro: títulos/texto principal */
-  --muted: #7d9093;      /* gris azulado: texto secundario */
-  --border: rgba(0,0,0,.12);
-  --accent: #ba946e;     /* dorado suave: acentos */
-  --accent-weak: #476779;/* azul gris medio: estados secundarios/soporte */
-  --col-sombra: rgba(0,0,0,.08);
+  --bg: #f0e5c3; /* crema claro: fondo principal */
+  --surface-1: #f7efd8; /* beige cálido: cards/secciones */
+  --surface-2: #fff7ea; /* crema inputs */
+  --text: #39646d; /* azul petróleo oscuro: títulos/texto principal */
+  --muted: #7d9093; /* gris azulado: texto secundario */
+  --border: rgba(0, 0, 0, 0.12);
+  --accent: #ba946e; /* dorado suave: acentos */
+  --accent-weak: #476779; /* azul gris medio: estados secundarios/soporte */
+  --col-sombra: rgba(0, 0, 0, 0.08);
 }
-
-
