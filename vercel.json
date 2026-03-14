@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/menu",
+      "destination": "https://lunaria-two.vercel.app/",
+      "permanent": false
+    }
+  ]
+}
