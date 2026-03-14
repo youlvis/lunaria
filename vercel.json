@@ -2,7 +2,7 @@
   "redirects": [
     {
       "source": "/menu",
-      "destination": "drive.google.com/file/d/1w-mN34NhVrIXoGsfYpnfTLTt0k02QYnp/view?usp=drivesdk",
+      "destination": "https://drive.google.com/file/d/1w-mN34NhVrIXoGsfYpnfTLTt0k02QYnp/view?usp=drivesdk",
       "permanent": false
     }
   ]
