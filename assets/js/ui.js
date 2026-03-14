@@ -362,10 +362,10 @@ const UI = (() => {
     if ($("#detailImg")) $("#detailImg").src = it.foto || "";
     if ($("#detailName")) $("#detailName").textContent = it.nombre || "";
     if ($("#detailDesc")) $("#detailDesc").textContent = it.descripcion || "";
-    if ($("#detailIngr"))
-      $("#detailIngr").textContent = it.ingredientes
-        ? `Ingredientes: ${it.ingredientes}`
-        : "";
+    // if ($("#detailIngr"))
+    //   $("#detailIngr").textContent = it.ingredientes
+    //     ? `Ingredientes: ${it.ingredientes}`
+    //     : "";
     if ($("#detailPrice"))
       $("#detailPrice").textContent = Store.fmt(it.precio || 0);
     toggleDetail(true);
