@@ -110,7 +110,7 @@ const UI = (() => {
       sec.className = "cat-section space-y-3";
       sec.innerHTML = `
         <h2 class="h-cat">${c}</h2>
-        <div class="space-y-3" id="list-${slug(c)}"></div>
+        <div class="space-y-3 category-list" id="list-${slug(c)}"></div>
       `;
       cont.appendChild(sec);
 

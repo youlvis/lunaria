@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="es">
   <head>
     <meta charset="utf-8" />
@@ -12,7 +12,7 @@
       content="Menú digital de Lunaria: explora categorías, busca platos e ingredientes y descubre el detalle de cada producto."
     />
     <meta name="theme-color" content="#0b0b0c" />
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/css/tailwind-built.css" />
     <link rel="stylesheet" href="assets/css/styles.css?v=1.0.0" />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
@@ -139,8 +139,7 @@
               <button
                 id="clearSearch"
                 class="ml-0 h-[45px] w-[45px] grid place-content-center bg-neutral-800 border border-white/10 text-base"
-              >
-              </button>
+              ></button>
             </div>
           </div>
         </div>
@@ -149,15 +148,16 @@
       <!-- Menu de categorias (overlay movil) -->
       <div id="catMenuOverlay" class="fixed inset-0 hidden z-40">
         <div class="absolute inset-0 bg-black/50" data-close="overlay"></div>
-        <div class="absolute inset-0 flex items-start justify-center pt-20 px-3">
+        <div
+          class="absolute inset-0 flex items-start justify-center pt-20 px-3"
+        >
           <div
             class="w-full max-w-md rounded-xl bg-neutral-950 border border-white/10 shadow-xl overflow-hidden"
           >
-            <div id="catMenu" class="py-1 max-h-[70vh] overflow-y-auto"></div>
+            <div id="catMenu" class="max-h-[70vh] overflow-y-auto"></div>
           </div>
         </div>
       </div>
-
 
       <!-- CONTENIDO: secciones por categoria -->
       <main

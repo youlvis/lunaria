@@ -57,6 +57,7 @@ input {
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: var(--text);
+  margin-bottom: 6px;
 }
 
 /* ===================================================
@@ -234,4 +235,10 @@ body.detail-open #homeScreen {
   --accent: #ba946e; /* dorado suave: acentos */
   --accent-weak: #476779; /* azul gris medio: estados secundarios/soporte */
   --col-sombra: rgba(0, 0, 0, 0.08);
+}
+
+.category-list{
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
