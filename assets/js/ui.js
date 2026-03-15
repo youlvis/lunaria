@@ -1,10 +1,21 @@
-﻿/* ui.js */
+/* ui.js */
 const UI = (() => {
   // ---------- Helpers ----------
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
+  const hide = (el) => el?.classList.add("hidden");
+  const show = (el) => el?.classList.remove("hidden");
+  const toggleHidden = (el, force) => el?.classList.toggle("hidden", force);
+  const getContent = () => document.getElementById("content");
+  const getSections = () =>
+    Array.from(document.querySelectorAll("#content .cat-section"));
+  const norm = (s) =>
+    String(s || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
 
-  // ---------- Agrupar por categoría respetando el ORDEN DEL SHEET ----------
+  // ---------- Agrupar por categoría respetando el orden del sheet ----------
   function groupByCategory(items) {
     const map = new Map();
     const cats = [];
@@ -89,7 +100,7 @@ const UI = (() => {
 
   // ---------- Secciones ----------
   function buildSections({ cats, map }) {
-    const cont = $("#content");
+    const cont = getContent();
     if (!cont) return;
     cont.innerHTML = "";
 
@@ -136,12 +147,6 @@ const UI = (() => {
   }
 
   // ---------- Buscador unificado ----------
-  const norm = (s) =>
-    String(s || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-
   function ensureSearchOverlay() {
     const panel = $("#searchPanel");
     if (!panel || panel.dataset.simple === "true") return;
@@ -160,89 +165,114 @@ const UI = (() => {
     panel.dataset.simple = "true";
   }
 
-  // chips removidos para diseño minimalistaf
+  const syncSearchInputs = (
+    value = "",
+    { skipUnified = false, skipDesktop = false } = {}
+  ) => {
+    if (!skipDesktop && $("#search")) $("#search").value = value;
+    if (!skipUnified && $("#searchUnified")) $("#searchUnified").value = value;
+  };
 
   function openSearchPanel() {
     ensureSearchOverlay();
-    if ($("#searchUnified") && $("#search"))
-      $("#searchUnified").value = $("#search").value || "";
-    const _tabs = document.getElementById("catTabs");
-    if (_tabs) _tabs.classList.add("hidden");
-    const _options = document.getElementById("optionsBar");
-    if (_options) _options.classList.add("hidden");
-    $("#searchPanel")?.classList.remove("hidden");
+    syncSearchInputs($("#search")?.value || "");
+    hide(document.getElementById("catTabs"));
+    hide(document.getElementById("optionsBar"));
+    show($("#searchPanel"));
     $("#searchUnified")?.focus();
   }
 
   function closeSearchPanel(clear = true) {
-    $("#searchPanel")?.classList.add("hidden");
-    const _tabs = document.getElementById("catTabs");
-    if (_tabs) _tabs.classList.remove("hidden");
-    const _options = document.getElementById("optionsBar");
-    if (_options) _options.classList.remove("hidden");
-    if (clear) {
-      if ($("#searchUnified")) $("#searchUnified").value = "";
-      if ($("#search")) $("#search").value = "";
-    }
+    hide($("#searchPanel"));
+    show(document.getElementById("catTabs"));
+    show(document.getElementById("optionsBar"));
+    if (clear) syncSearchInputs("");
     applySearch();
   }
 
-  // Buscador con prioridad por nombre del plato
-  function applySearch() {
-    ensureSearchOverlay();
-    const raw = (
-      $("#searchUnified")?.value ||
-      $("#search")?.value ||
-      ""
-    ).trim();
-    const q = norm(raw);
-    const sections = Array.from(
-      document.querySelectorAll("#content .cat-section")
-    );
-    const container = document.getElementById("content");
-
+  const ensureEmptyBanner = () => {
     let emptyBanner = document.getElementById("noResults");
     if (!emptyBanner) {
       emptyBanner = document.createElement("div");
       emptyBanner.id = "noResults";
       emptyBanner.className =
         "hidden mx-auto max-w-5xl px-3 sm:px-4 mt-4 text-sm text-neutral-400";
-      const content = document.getElementById("content");
+      const content = getContent();
       content?.parentNode?.insertBefore(emptyBanner, content.nextSibling);
     }
-    let matches = 0;
+    return emptyBanner;
+  };
 
+  const ensureOrderIndexes = (sections) => {
     sections.forEach((sec, secIdx) => {
-      const heading = sec.querySelector(".h-cat")?.textContent || "";
-      const rows = Array.from(sec.querySelectorAll(".item-row"));
-
-      // Guardar orden original de secciones y filas
       if (!sec.dataset.sectionIndex) sec.dataset.sectionIndex = String(secIdx);
+      const rows = Array.from(sec.querySelectorAll(".item-row"));
       rows.forEach((row, idx) => {
         if (!row.dataset.orderIndex) row.dataset.orderIndex = String(idx);
       });
+    });
+  };
 
-      if (!q) {
-        sec.style.display = "";
-        rows.forEach((row) => {
-          row.style.display = "";
-        });
-        // restaurar orden original de filas
-        const parent = rows[0]?.parentNode;
-        if (parent) {
-          const ordered = [...rows].sort(
+  const resetSections = (sections, container) => {
+    sections.forEach((sec) => {
+      const rows = Array.from(sec.querySelectorAll(".item-row"));
+      sec.style.display = "";
+      sec.dataset.searchScore = "0";
+      sec.style.marginTop = "";
+      rows.forEach((row) => {
+        row.style.display = "";
+        row.dataset.searchScore = "0";
+      });
+      const parent = rows[0]?.parentNode;
+      if (parent) {
+        rows
+          .slice()
+          .sort(
             (a, b) =>
               Number(a.dataset.orderIndex || 0) -
               Number(b.dataset.orderIndex || 0)
-          );
-          ordered.forEach((row) => parent.appendChild(row));
-        }
-        sec.dataset.searchScore = "0";
-        sec.style.marginTop = "";
-        return;
+          )
+          .forEach((row) => parent.appendChild(row));
       }
+    });
 
+    if (container) {
+      sections
+        .slice()
+        .sort(
+          (a, b) =>
+            Number(a.dataset.sectionIndex || 0) -
+            Number(b.dataset.sectionIndex || 0)
+        )
+        .forEach((sec) => container.appendChild(sec));
+    }
+  };
+
+  // Buscador con prioridad por nombre del plato
+  function applySearch() {
+    ensureSearchOverlay();
+    const raw = ($("#searchUnified")?.value || $("#search")?.value || "").trim();
+    const q = norm(raw);
+    const sections = getSections();
+    const container = getContent();
+    if (!sections.length || !container) return;
+
+    ensureOrderIndexes(sections);
+    const emptyBanner = ensureEmptyBanner();
+
+    if (!q) {
+      resetSections(sections, container);
+      hide(emptyBanner);
+      return;
+    }
+
+    let matches = 0;
+
+    sections.forEach((sec) => {
+      const heading = sec.querySelector(".h-cat")?.textContent || "";
       const headingMatch = norm(heading).includes(q);
+      const rows = Array.from(sec.querySelectorAll(".item-row"));
+
       let sectionMatch = false;
       let sectionScore = 0;
 
@@ -254,35 +284,30 @@ const UI = (() => {
           row.dataset.searchText ||
           (row.dataset.searchText = norm(row.textContent));
 
-        const titleMatch = titleText.includes(q);
-        const textMatch = fullText.includes(q);
-
         let score = 0;
-        if (titleMatch) score = 3; // nombre del plato
-        else if (textMatch) score = 2; // descripción / ingredientes
+        if (titleText.includes(q)) score = 3; // nombre del plato
+        else if (fullText.includes(q)) score = 2; // descripción / ingredientes
         else if (headingMatch) score = 1; // solo por categoría
 
-        if (score > 0) {
+        if (score) {
           row.style.display = "";
           row.dataset.searchScore = String(score);
           sectionMatch = true;
-          if (score > sectionScore) sectionScore = score;
+          sectionScore = Math.max(sectionScore, score);
         } else {
           row.style.display = "none";
           row.dataset.searchScore = "0";
         }
       });
 
-      sec.style.display = sectionMatch ? "" : "none";
+      toggleHidden(sec, !sectionMatch);
       sec.dataset.searchScore = String(sectionScore);
 
       if (sectionMatch) {
         const parent = rows[0]?.parentNode;
         if (parent) {
-          const visibleRows = rows.filter(
-            (row) => row.style.display !== "none"
-          );
-          visibleRows
+          rows
+            .filter((row) => row.style.display !== "none")
             .sort((a, b) => {
               const sa = Number(a.dataset.searchScore || 0);
               const sb = Number(b.dataset.searchScore || 0);
@@ -299,52 +324,29 @@ const UI = (() => {
     });
 
     // Reordenar secciones según mejor coincidencia
-    if (q && container) {
-      const visibleSections = sections.filter(
-        (sec) => sec.style.display !== "none"
-      );
-      visibleSections
-        .sort((a, b) => {
-          const sa = Number(a.dataset.searchScore || 0);
-          const sb = Number(b.dataset.searchScore || 0);
-          if (sa !== sb) return sb - sa;
-          return (
-            Number(a.dataset.sectionIndex || 0) -
-            Number(b.dataset.sectionIndex || 0)
-          );
-        })
-        .forEach((sec) => container.appendChild(sec));
-    } else if (!q && container) {
-      // restaurar orden original de secciones
-      sections
-        .slice()
-        .sort(
-          (a, b) =>
-            Number(a.dataset.sectionIndex || 0) -
-            Number(b.dataset.sectionIndex || 0)
-        )
-        .forEach((sec) => container.appendChild(sec));
-    }
-
-    // corregir salto visual del primer bloque visible
-    if (q) {
-      const visibleSecs = sections.filter(
-        (sec) => sec.style.display !== "none"
-      );
-      visibleSecs.forEach((sec, idx) => {
+    const visibleSections = sections.filter(
+      (sec) => sec.style.display !== "none"
+    );
+    visibleSections
+      .sort((a, b) => {
+        const sa = Number(a.dataset.searchScore || 0);
+        const sb = Number(b.dataset.searchScore || 0);
+        if (sa !== sb) return sb - sa;
+        return (
+          Number(a.dataset.sectionIndex || 0) -
+          Number(b.dataset.sectionIndex || 0)
+        );
+      })
+      .forEach((sec, idx) => {
+        container.appendChild(sec);
         sec.style.marginTop = idx === 0 ? "0px" : "";
       });
-    }
 
-    if (emptyBanner) {
-      if (!q) {
-        emptyBanner.classList.add("hidden");
-      } else if (!matches) {
-        emptyBanner.textContent = `No encontramos coincidencias con "${raw}". Prueba con otro término o revisa las categorías.`;
-        emptyBanner.classList.remove("hidden");
-      } else {
-        emptyBanner.classList.add("hidden");
-      }
+    if (!matches) {
+      emptyBanner.textContent = `No encontramos coincidencias con "${raw}". Prueba con otro término o revisa las categorías.`;
+      show(emptyBanner);
+    } else {
+      hide(emptyBanner);
     }
   }
 
@@ -362,10 +364,6 @@ const UI = (() => {
     if ($("#detailImg")) $("#detailImg").src = it.foto || "";
     if ($("#detailName")) $("#detailName").textContent = it.nombre || "";
     if ($("#detailDesc")) $("#detailDesc").textContent = it.descripcion || "";
-    // if ($("#detailIngr"))
-    //   $("#detailIngr").textContent = it.ingredientes
-    //     ? `Ingredientes: ${it.ingredientes}`
-    //     : "";
     if ($("#detailPrice"))
       $("#detailPrice").textContent = Store.fmt(it.precio || 0);
     toggleDetail(true);
@@ -409,10 +407,8 @@ const UI = (() => {
       for (const sec of sections) {
         const rect = sec.getBoundingClientRect();
         if (rect.top - viewportTop <= 0) {
-          // este bloque ya pas� por debajo de la barra fija
           current = sec;
         } else {
-          // los siguientes a�n est�n m�s abajo
           break;
         }
       }
@@ -490,6 +486,7 @@ const UI = (() => {
   // ---------- Eventos ----------
   function wireEvents() {
     ensureSearchOverlay();
+
     $("#openCatMenu")?.addEventListener("click", () => {
       openOverlay("#catMenuOverlay");
       const activeText = $("#catTabs button.active")?.textContent?.trim();
@@ -501,6 +498,7 @@ const UI = (() => {
         btn?.scrollIntoView({ block: "center", behavior: "auto" });
       }
     });
+
     $("#openCatMenuDesk")?.addEventListener("click", openCatDesk);
     $$('#catMenuOverlay [data-close="overlay"]').forEach(
       (e) => (e.onclick = closeOverlay)
@@ -513,17 +511,18 @@ const UI = (() => {
     $("#openSearch")?.addEventListener("click", openSearchPanel);
     $("#search")?.addEventListener("input", () => {
       ensureSearchOverlay();
-      if ($("#searchUnified"))
-        $("#searchUnified").value = $("#search").value || "";
+      syncSearchInputs($("#search")?.value || "", { skipDesktop: true });
       applySearch();
     });
-    $("#searchUnified")?.addEventListener("input", applySearch);
+    $("#searchUnified")?.addEventListener("input", () => {
+      syncSearchInputs($("#searchUnified")?.value || "", { skipUnified: true });
+      applySearch();
+    });
     $("#clearSearch")?.addEventListener("click", () => closeSearchPanel(true));
     document.addEventListener("click", (ev) => {
       const p = ev.target.closest("#searchPanel");
       const trigger =
         ev.target.closest("#openSearch") || ev.target.closest("#search");
-      // cerrar y limpiar si se hace click fuera
       if (!p && !trigger) closeSearchPanel(true);
     });
     document.addEventListener("keydown", (ev) => {

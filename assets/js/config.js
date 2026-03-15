@@ -4,8 +4,17 @@ const ENDPOINT = "https://script.google.com/macros/s/AKfycbwox-OZt6lZAyy9hKC_yYz
 // Modo por defecto
 const DEFAULT_MODE = "menu"; // o "order"
 
-const APP_FLAGS = {
-    currency: 'es-CO',
-    waMustacheTemplate:
-        "Hola, quiero hacer este pedido:\n{{items}}\n\nTotal: ${{total}}\n\nNombre:\nDirección:\nForma de pago:\nNotas:"
-};
+const APP_FLAGS = Object.freeze({
+  currency: "es-CO",
+  waMustacheTemplate: [
+    "Hola, quiero hacer este pedido:",
+    "{{items}}",
+    "",
+    "Total: ${{total}}",
+    "",
+    "Nombre:",
+    "Dirección:",
+    "Forma de pago:",
+    "Notas:"
+  ].join("\n"),
+});
