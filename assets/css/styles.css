@@ -197,7 +197,6 @@ input {
    =================================================== */
 
 #catMenuOverlay .bg-neutral-950,
-#searchOverlay .bg-neutral-950,
 #detailModal .bg-neutral-950 {
   background-color: var(--surface-1) !important;
   /* border-color: var(--border) !important; */

@@ -1,4 +1,4 @@
-/* ui.js */
+﻿/* ui.js */
 const UI = (() => {
   // ---------- Helpers ----------
   const $ = (s) => document.querySelector(s);
@@ -215,6 +215,7 @@ const UI = (() => {
 
   const resetSections = (sections, container) => {
     sections.forEach((sec) => {
+      sec.classList.remove("hidden");
       const rows = Array.from(sec.querySelectorAll(".item-row"));
       sec.style.display = "";
       sec.dataset.searchScore = "0";
@@ -351,16 +352,35 @@ const UI = (() => {
   }
 
   // ---------- Modal ----------
-  let lastDetailScrollY = 0;
+  let lastDetail = { id: null, scrollY: 0 };
+
+  const scrollToItem = (id) => {
+    if (!id) return false;
+    const target = document.querySelector(`[data-detail="${id}"]`);
+    if (!target) return false;
+    const sec = target.closest(".cat-section");
+    const off = calcOffset();
+    const y = target.getBoundingClientRect().top + window.pageYOffset - off - 8;
+    programmaticNav = true;
+    window.scrollTo({ top: y, behavior: "auto" });
+    if (sec) setActiveBySectionId(sec.id, "auto");
+    setTimeout(() => {
+      programmaticNav = false;
+    }, 160);
+    return true;
+  };
 
   function openDetail(id) {
     const it = Store.state.items.find((x) => String(x.id) === String(id));
     if (!it) return;
-    lastDetailScrollY =
+    lastDetail = {
+      id,
+      scrollY:
       window.pageYOffset ||
       document.documentElement.scrollTop ||
       document.body.scrollTop ||
-      0;
+      0,
+    };
     if ($("#detailImg")) $("#detailImg").src = it.foto || "";
     if ($("#detailName")) $("#detailName").textContent = it.nombre || "";
     if ($("#detailDesc")) $("#detailDesc").textContent = it.descripcion || "";
@@ -372,7 +392,10 @@ const UI = (() => {
     $("#detailModal")?.classList.toggle("hidden", !open);
     document.body.classList.toggle("detail-open", open);
     if (!open && typeof window !== "undefined") {
-      window.scrollTo({ top: lastDetailScrollY, behavior: "auto" });
+      closeSearchPanel(true); // restablece lista completa y tabs
+      if (!scrollToItem(lastDetail.id)) {
+        window.scrollTo({ top: lastDetail.scrollY, behavior: "auto" });
+      }
     }
   }
 
@@ -503,9 +526,9 @@ const UI = (() => {
     $$('#catMenuOverlay [data-close="overlay"]').forEach(
       (e) => (e.onclick = closeOverlay)
     );
-    $$('#searchOverlay [data-close="overlay"]').forEach(
-      (e) => (e.onclick = closeOverlay)
-    );
+    // $$('#searchOverlay [data-close="overlay"]').forEach(
+    //   (e) => (e.onclick = closeOverlay)
+    // );
 
     // search mejorado
     $("#openSearch")?.addEventListener("click", openSearchPanel);
