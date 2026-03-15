@@ -12,7 +12,6 @@
       content="Menú digital de Lunaria: explora categorías, busca platos e ingredientes y descubre el detalle de cada producto."
     />
     <meta name="theme-color" content="#0b0b0c" />
-    <link rel="stylesheet" href="assets/css/tailwind-built.css" />
     <link rel="stylesheet" href="assets/css/styles.css?v=1.0.0" />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
@@ -20,181 +19,104 @@
     />
   </head>
 
-  <body class="bg-neutral-950 text-neutral-50">
+  <body class="page">
     <div id="homeScreen">
-      <!-- HERO con logo -->
-      <header class="relative">
-        <div class="h-40 sm:h-56 w-full overflow-hidden">
+      <header class="hero">
+        <div class="hero__media">
           <img
             id="heroImg"
             src="https://res.cloudinary.com/dh2byewas/image/upload/ar_16:9,c_crop,g_north_west,h_1165,w_1537,y_733/c_auto,h_160,w_360/IMG_6007_otxh3l.jpg"
             alt="Fondo del menú"
             loading="lazy"
-            class="w-full h-full object-cover opacity-70"
+            class="hero__img"
           />
         </div>
-        <!-- <div class="absolute inset-0 flex flex-col items-center justify-center">
-          <img
-            src="assets/img/logo-icon.svg"
-            class="shadow h-[100%]"
-            alt="Lunaria"
-          />
-        </div> -->
       </header>
 
       <!-- BARRA DE ACCIONES -->
-      <section
-        id="actionBar"
-        class="sticky top-0 z-30 bg-neutral-950/90 backdrop-blur border-b border-white/10 relative"
-      >
-        <div
-          id="optionsBar"
-          class="mx-auto max-w-5xl px-3 sm:px-4 py-3 grid grid-cols-12 gap-2 items-center"
-        >
-          <!-- Buscar -->
-          <div class="col-span-2 sm:col-span-3">
-            <button
-              id="openSearch"
-              class="w-10 h-10 grid place-content-center rounded-xl border border-white/10 bg-[var(--bg)]"
-            >
-              <img
-                src="assets/img/search.svg"
-                class="w-[20px] h-[20px]"
-                alt="Buscar"
-              />
+      <section id="actionBar" class="action-bar">
+        <div id="optionsBar" class="action-bar__inner">
+          <div class="action-bar__group action-bar__group--mobile">
+            <button id="openSearch" class="action-bar__button" aria-label="Buscar">
+              <img src="assets/img/search.svg" class="action-bar__icon" alt="Buscar" />
             </button>
           </div>
 
-          <!-- Categorias (menu hamburguesa) -->
-          <div class="col-span-2 sm:col-span-3">
-            <button
-              id="openCatMenu"
-              class="w-10 h-10 grid place-content-center rounded-xl bg-[var(--bg)] border border-white/10"
-            >
-              <img
-                src="assets/img/menu-icon.svg"
-                class="w-[20px] h-[20px]"
-                alt="Categorias"
-              />
+          <div class="action-bar__group action-bar__group--mobile">
+            <button id="openCatMenu" class="action-bar__button" aria-label="Categorías">
+              <img src="assets/img/menu-icon.svg" class="action-bar__icon" alt="Categorias" />
             </button>
           </div>
 
-          <!-- Titulo de la categoria actual (solo movil) -->
-          <div class="col-span-8 sm:hidden">
-            <div
-              id="currentCat"
-              class="truncate text-sm font-semibold opacity-90"
-            ></div>
+          <div class="action-bar__current">
+            <div id="currentCat" class="action-bar__current-label"></div>
           </div>
 
-          <!-- Controles desktop -->
-          <div class="hidden sm:flex col-span-6 justify-end gap-2">
+          <div class="action-bar__desktop">
             <input
               id="search"
               type="search"
               inputmode="search"
               placeholder="Buscar platos o ingredientes"
-              class="px-3 py-2 w-72 rounded-xl bg-neutral-900 border border-white/10 focus:outline-none focus:ring text-sm placeholder:text-neutral-400"
+              class="action-bar__input"
             />
-            <div class="relative">
-              <button
-                id="openCatMenuDesk"
-                class="px-3 py-2 rounded-xl bg-neutral-900 border border-white/10 text-sm"
-              >
+            <div class="action-bar__desktop-menu">
+              <button id="openCatMenuDesk" class="action-bar__menu-trigger">
                 Categorias
               </button>
-              <div
-                id="catMenuDesk"
-                class="hidden absolute right-0 mt-2 w-64 rounded-xl bg-neutral-950 border border-white/10 shadow-xl overflow-hidden"
-              ></div>
+              <div id="catMenuDesk" class="action-bar__menu-list hidden"></div>
             </div>
           </div>
         </div>
 
-        <!-- Tabs horizontales de categorias -->
-        <nav
-          id="catTabs"
-          class="mx-auto max-w-5xl px-2 sm:px-4 pb-2 overflow-x-auto no-scrollbar flex gap-4"
-        ></nav>
+        <nav id="catTabs" class="category-tabs no-scrollbar"></nav>
 
-        <!-- Panel de busqueda superpuesto al actionBar -->
-        <div
-          id="searchPanel"
-          class="hidden inset-0 px-3 sm:px-4 py-3 z-40 bg-[var(--bg)] backdrop-blur border-b border-white/10"
-          style="border: none"
-        >
-          <div class="mx-auto max-w-5xl">
-            <div
-              id="inputPanel"
-              class="h-12 rounded-[14px] flex items-center pl-4 shadow-lg"
-            >
-              <span class="inline-block h-3 w-3 rounded-full mr-2"></span>
+        <div id="searchPanel" class="search-panel hidden">
+          <div class="search-panel__inner">
+            <div id="inputPanel" class="search-panel__field">
+              <span class="search-panel__dot"></span>
               <input
                 id="searchUnified"
                 type="text"
                 inputmode="search"
                 placeholder="Buscar platos, ingredientes o categorias"
-                class="flex-1 bg-transparent border-0 focus:outline-none text-sm placeholder:text-neutral-400"
+                class="search-panel__input"
               />
-              <button
-                id="clearSearch"
-                class="ml-0 h-[45px] w-[45px] grid place-content-center bg-neutral-800 border border-white/10 text-base"
-              ></button>
+              <button id="clearSearch" class="search-panel__clear" aria-label="Limpiar búsqueda"></button>
             </div>
           </div>
         </div>
       </section>
 
       <!-- Menu de categorias (overlay movil) -->
-      <div id="catMenuOverlay" class="fixed inset-0 hidden z-40">
-        <div class="absolute inset-0 bg-black/50" data-close="overlay"></div>
-        <div
-          class="absolute inset-0 flex items-start justify-center pt-20 px-3"
-        >
-          <div
-            class="w-full max-w-md rounded-xl bg-neutral-950 border border-white/10 shadow-xl overflow-hidden"
-          >
-            <div id="catMenu" class="max-h-[70vh] overflow-y-auto"></div>
+      <div id="catMenuOverlay" class="overlay overlay--menu hidden">
+        <div class="overlay__backdrop" data-close="overlay"></div>
+        <div class="overlay__container">
+          <div class="overlay__panel">
+            <div id="catMenu" class="overlay__content"></div>
           </div>
         </div>
       </div>
 
       <!-- CONTENIDO: secciones por categoria -->
-      <main
-        id="content"
-        class="mx-auto max-w-5xl px-3 sm:px-4 py-4 sm:py-6 space-y-8"
-      ></main>
+      <main id="content" class="menu"></main>
     </div>
 
     <!-- MODAL DETALLE (pantalla completa) -->
-    <div id="detailModal" class="fixed inset-0 hidden z-50">
-      <div class="absolute inset-0 bg-black/70" data-close="modal"></div>
-      <div
-        class="absolute inset-0 sm:inset-y-10 sm:inset-x-10 rounded-none sm:rounded-2xl overflow-hidden bg-neutral-950 shadow-2xl"
-      >
-        <button
-          id="closeDetail"
-          class="absolute top-3 right-3 z-10 w-10 h-10 grid place-content-center rounded-xl bg-neutral-900 border border-white/10"
-        >
-          <img
-            src="assets/img/close-icon.svg"
-            class="w-[20px] h-[20px]"
-            alt="Cerrar"
-          />
+    <div id="detailModal" class="detail-modal hidden">
+      <div class="detail-modal__backdrop" data-close="modal"></div>
+      <div class="detail-modal__dialog">
+        <button id="closeDetail" class="detail-modal__close" aria-label="Cerrar">
+          <img src="assets/img/close-icon.svg" class="detail-modal__close-icon" alt="Cerrar" />
         </button>
-        <div class="h-[65vh] sm:h-[70vh] w-full overflow-hidden bg-neutral-900">
-          <img
-            id="detailImg"
-            src=""
-            alt=""
-            class="w-full h-full object-cover"
-          />
+        <div class="detail-modal__media">
+          <img id="detailImg" src="" alt="" class="detail-modal__img" />
         </div>
-        <div class="p-4 sm:p-6 space-y-2">
-          <h3 id="detailName" class="text-xl font-bold"></h3>
-          <p id="detailDesc" class="text-sm text-neutral-300"></p>
-          <p id="detailIngr" class="text-xs text-neutral-400"></p>
-          <div class="pt-3 text-lg font-semibold">
+        <div class="detail-modal__body">
+          <h3 id="detailName" class="detail-modal__title"></h3>
+          <p id="detailDesc" class="detail-modal__desc"></p>
+          <p id="detailIngr" class="detail-modal__extra"></p>
+          <div class="detail-modal__price">
             Precio: $<span id="detailPrice">0</span>
           </div>
         </div>
@@ -210,16 +132,10 @@
     <script src="assets/js/main.js?v=1.0.0" defer></script>
 
     <!-- PRELOADER: visible hasta que el servicio responda -->
-    <div
-      id="preloader"
-      class="fixed inset-0 z-50 grid place-items-center bg-[var(--surface-2)]"
-    >
-      <div class="flex flex-col items-center gap-3">
-        <div
-          class="h-10 w-10 rounded-full border-4 border-[var(--muted)] border-t-[var(--accent)] animate-spin"
-          aria-hidden="true"
-        ></div>
-        <p class="text-sm text-var" role="status">Cargando menú...</p>
+    <div id="preloader" class="preloader">
+      <div class="preloader__box">
+        <div class="preloader__spinner" aria-hidden="true"></div>
+        <p class="preloader__text" role="status">Cargando menú...</p>
       </div>
     </div>
   </body>

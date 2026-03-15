@@ -8,7 +8,7 @@ const UI = (() => {
   const toggleHidden = (el, force) => el?.classList.toggle("hidden", force);
   const getContent = () => document.getElementById("content");
   const getSections = () =>
-    Array.from(document.querySelectorAll("#content .cat-section"));
+    Array.from(document.querySelectorAll("#content .menu__section"));
   const norm = (s) =>
     String(s || "")
       .toLowerCase()
@@ -52,11 +52,10 @@ const UI = (() => {
     wrap.innerHTML = "";
     cats.forEach((c, idx) => {
       const b = document.createElement("button");
-      b.className =
-        "tab-underline pb-2 font-semibold text-sm text-neutral-300 whitespace-nowrap";
+      b.className = "category-tabs__item";
       b.dataset.target = `#sec-${slug(c)}`;
       b.textContent = c;
-      if (idx === 0) b.classList.add("active");
+      if (idx === 0) b.classList.add("is-active");
       b.onclick = () => goToCategory(b.dataset.target, "auto");
       wrap.appendChild(b);
     });
@@ -67,14 +66,12 @@ const UI = (() => {
     if (menu) menu.innerHTML = "";
     const menuDesk = $("#catMenuDesk");
     if (menuDesk) menuDesk.innerHTML = "";
-    const activeLabel = $("#catTabs button.active")?.textContent?.trim();
 
     cats.forEach((c) => {
       const makeBtn = () => {
         const btn = document.createElement("button");
-        btn.className = "w-full text-left px-4 py-3 hover:bg-white/5";
+        btn.className = "overlay__item";
         btn.textContent = c;
-        if (activeLabel && activeLabel === c) btn.classList.add("bg-white/5");
         return btn;
       };
 
@@ -107,10 +104,10 @@ const UI = (() => {
     cats.forEach((c) => {
       const sec = document.createElement("section");
       sec.id = `sec-${slug(c)}`;
-      sec.className = "cat-section space-y-3";
+      sec.className = "menu__section";
       sec.innerHTML = `
-        <h2 class="h-cat">${c}</h2>
-        <div class="space-y-3 category-list" id="list-${slug(c)}"></div>
+        <h2 class="menu__section-title">${c}</h2>
+        <div class="menu__list" id="list-${slug(c)}"></div>
       `;
       cont.appendChild(sec);
 
@@ -122,26 +119,24 @@ const UI = (() => {
   // ---------- Fila compacta ----------
   function rowItem(it) {
     const hasDesc = Boolean(
-      it.descripcion && String(it.descripcion).trim().length
+      it.descripcion && String(it.descripcion).trim().length,
     );
     const div = document.createElement("div");
-    div.className = "item-row";
+    div.className = "menu-item";
     div.setAttribute("data-detail", it.id);
     div.innerHTML = `
-      <div class="min-w-0">
-        <div class="row-title line-clamp-1">${it.nombre || ""}</div>
+      <div class="menu-item__thumb" data-detail="${it.id}">
+        <img loading="lazy" src="${it.foto || ""}" alt="${it.nombre || ""}">
+      </div>
+      <div class="menu-item__body">
+        <div class="menu-item__title">${it.nombre || ""}</div>
         ${
           hasDesc
-            ? `<div class="row-desc line-clamp-2">${it.descripcion || ""}</div>`
+            ? `<p class="menu-item__desc">${it.descripcion || ""}</p>`
             : ``
         }
-        <div class="row-price">$${Store.fmt(it.precio || 0)}</div>
+        <div class="menu-item__price">$${Store.fmt(it.precio || 0)}</div>
       </div>
-      <button class="thumb" data-detail="${it.id}" aria-label="Ver detalle de ${
-      it.nombre || ""
-    }">
-        <img loading="lazy" src="${it.foto || ""}" alt="${it.nombre || ""}">
-      </button>
     `;
     return div;
   }
@@ -149,25 +144,13 @@ const UI = (() => {
   // ---------- Buscador unificado ----------
   function ensureSearchOverlay() {
     const panel = $("#searchPanel");
-    if (!panel || panel.dataset.simple === "true") return;
-    panel.innerHTML = `
-      <div class="mx-auto max-w-5xl">
-        <div id="inputPanel" class="h-12 rounded-[14px] flex items-center pl-2 pr-2 shadow-lg">
-          <span class="inline-block h-3 w-3 rounded-full bg-[var(--accent)] mr-2"></span>
-          <input id="searchUnified" type="text" inputmode="search" placeholder="Buscar platos, ingredientes o categorias"
-            class="flex-1 bg-transparent border-0 focus:outline-none text-[0.8rem] leading-[1.25rem] placeholder:text-neutral-400" />
-          <button id="clearSearch" class="w-[32px] h-[32px] rounded-[10px] bg-[var(--bg)] flex items-center justify-center">
-           <img src="assets/img/icon-close.svg" class="w-[15px]" alt="Cerrar" />
-           </button>
-        </div>
-      </div>
-    `;
-    panel.dataset.simple = "true";
+    if (!panel) return;
+    panel.dataset.simple = "true"; // ya está maquetado en HTML
   }
 
   const syncSearchInputs = (
     value = "",
-    { skipUnified = false, skipDesktop = false } = {}
+    { skipUnified = false, skipDesktop = false } = {},
   ) => {
     if (!skipDesktop && $("#search")) $("#search").value = value;
     if (!skipUnified && $("#searchUnified")) $("#searchUnified").value = value;
@@ -195,8 +178,7 @@ const UI = (() => {
     if (!emptyBanner) {
       emptyBanner = document.createElement("div");
       emptyBanner.id = "noResults";
-      emptyBanner.className =
-        "hidden mx-auto max-w-5xl px-3 sm:px-4 mt-4 text-sm text-neutral-400";
+      emptyBanner.className = "hidden menu__empty";
       const content = getContent();
       content?.parentNode?.insertBefore(emptyBanner, content.nextSibling);
     }
@@ -206,7 +188,7 @@ const UI = (() => {
   const ensureOrderIndexes = (sections) => {
     sections.forEach((sec, secIdx) => {
       if (!sec.dataset.sectionIndex) sec.dataset.sectionIndex = String(secIdx);
-      const rows = Array.from(sec.querySelectorAll(".item-row"));
+      const rows = Array.from(sec.querySelectorAll(".menu-item"));
       rows.forEach((row, idx) => {
         if (!row.dataset.orderIndex) row.dataset.orderIndex = String(idx);
       });
@@ -216,7 +198,7 @@ const UI = (() => {
   const resetSections = (sections, container) => {
     sections.forEach((sec) => {
       sec.classList.remove("hidden");
-      const rows = Array.from(sec.querySelectorAll(".item-row"));
+      const rows = Array.from(sec.querySelectorAll(".menu-item"));
       sec.style.display = "";
       sec.dataset.searchScore = "0";
       sec.style.marginTop = "";
@@ -231,7 +213,7 @@ const UI = (() => {
           .sort(
             (a, b) =>
               Number(a.dataset.orderIndex || 0) -
-              Number(b.dataset.orderIndex || 0)
+              Number(b.dataset.orderIndex || 0),
           )
           .forEach((row) => parent.appendChild(row));
       }
@@ -243,7 +225,7 @@ const UI = (() => {
         .sort(
           (a, b) =>
             Number(a.dataset.sectionIndex || 0) -
-            Number(b.dataset.sectionIndex || 0)
+            Number(b.dataset.sectionIndex || 0),
         )
         .forEach((sec) => container.appendChild(sec));
     }
@@ -252,7 +234,11 @@ const UI = (() => {
   // Buscador con prioridad por nombre del plato
   function applySearch() {
     ensureSearchOverlay();
-    const raw = ($("#searchUnified")?.value || $("#search")?.value || "").trim();
+    const raw = (
+      $("#searchUnified")?.value ||
+      $("#search")?.value ||
+      ""
+    ).trim();
     const q = norm(raw);
     const sections = getSections();
     const container = getContent();
@@ -270,24 +256,27 @@ const UI = (() => {
     let matches = 0;
 
     sections.forEach((sec) => {
-      const heading = sec.querySelector(".h-cat")?.textContent || "";
+      const heading =
+        sec.querySelector(".menu__section-title")?.textContent || "";
       const headingMatch = norm(heading).includes(q);
-      const rows = Array.from(sec.querySelectorAll(".item-row"));
+      const rows = Array.from(sec.querySelectorAll(".menu-item"));
 
       let sectionMatch = false;
       let sectionScore = 0;
 
       rows.forEach((row) => {
         const titleText = norm(
-          row.querySelector(".row-title")?.textContent || ""
+          row.querySelector(".menu-item__title")?.textContent || "",
         );
         const fullText =
           row.dataset.searchText ||
           (row.dataset.searchText = norm(row.textContent));
 
         let score = 0;
-        if (titleText.includes(q)) score = 3; // nombre del plato
-        else if (fullText.includes(q)) score = 2; // descripción / ingredientes
+        if (titleText.includes(q))
+          score = 3; // nombre del plato
+        else if (fullText.includes(q))
+          score = 2; // descripción / ingredientes
         else if (headingMatch) score = 1; // solo por categoría
 
         if (score) {
@@ -302,6 +291,7 @@ const UI = (() => {
       });
 
       toggleHidden(sec, !sectionMatch);
+      sec.style.display = sectionMatch ? "" : "none";
       sec.dataset.searchScore = String(sectionScore);
 
       if (sectionMatch) {
@@ -326,7 +316,7 @@ const UI = (() => {
 
     // Reordenar secciones según mejor coincidencia
     const visibleSections = sections.filter(
-      (sec) => sec.style.display !== "none"
+      (sec) => sec.style.display !== "none",
     );
     visibleSections
       .sort((a, b) => {
@@ -358,7 +348,7 @@ const UI = (() => {
     if (!id) return false;
     const target = document.querySelector(`[data-detail="${id}"]`);
     if (!target) return false;
-    const sec = target.closest(".cat-section");
+    const sec = target.closest(".menu__section");
     const off = calcOffset();
     const y = target.getBoundingClientRect().top + window.pageYOffset - off - 8;
     programmaticNav = true;
@@ -376,10 +366,10 @@ const UI = (() => {
     lastDetail = {
       id,
       scrollY:
-      window.pageYOffset ||
-      document.documentElement.scrollTop ||
-      document.body.scrollTop ||
-      0,
+        window.pageYOffset ||
+        document.documentElement.scrollTop ||
+        document.body.scrollTop ||
+        0,
     };
     if ($("#detailImg")) $("#detailImg").src = it.foto || "";
     if ($("#detailName")) $("#detailName").textContent = it.nombre || "";
@@ -405,7 +395,6 @@ const UI = (() => {
   }
   function closeOverlay() {
     $("#catMenuOverlay")?.classList.add("hidden");
-    $("#searchOverlay")?.classList.add("hidden");
   }
   function openCatDesk() {
     $("#catMenuDesk")?.classList.toggle("hidden");
@@ -448,10 +437,10 @@ const UI = (() => {
       () => {
         calcOffset();
         updateActiveFromScroll();
-        const active = $("#catTabs button.active");
+        const active = $("#catTabs .is-active");
         if (active) ensureTabVisible(active, "auto");
       },
-      { passive: true }
+      { passive: true },
     );
 
     // estado inicial
@@ -482,8 +471,8 @@ const UI = (() => {
   function setActiveBySectionId(id, behavior = "smooth") {
     const btn = $(`#catTabs button[data-target="#${id}"]`);
     if (!btn) return;
-    $$("#catTabs button").forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
+    $$("#catTabs button").forEach((b) => b.classList.remove("is-active"));
+    btn.classList.add("is-active");
     ensureTabVisible(btn, behavior);
     const label = id.replace("sec-", "");
     const pretty = label
@@ -512,11 +501,11 @@ const UI = (() => {
 
     $("#openCatMenu")?.addEventListener("click", () => {
       openOverlay("#catMenuOverlay");
-      const activeText = $("#catTabs button.active")?.textContent?.trim();
+      const activeText = $("#catTabs .is-active")?.textContent?.trim();
       const list = $("#catMenu");
       if (list && activeText) {
         const btn = Array.from(list.querySelectorAll("button")).find(
-          (b) => b.textContent.trim() === activeText
+          (b) => b.textContent.trim() === activeText,
         );
         btn?.scrollIntoView({ block: "center", behavior: "auto" });
       }
@@ -524,11 +513,8 @@ const UI = (() => {
 
     $("#openCatMenuDesk")?.addEventListener("click", openCatDesk);
     $$('#catMenuOverlay [data-close="overlay"]').forEach(
-      (e) => (e.onclick = closeOverlay)
+      (e) => (e.onclick = closeOverlay),
     );
-    // $$('#searchOverlay [data-close="overlay"]').forEach(
-    //   (e) => (e.onclick = closeOverlay)
-    // );
 
     // search mejorado
     $("#openSearch")?.addEventListener("click", openSearchPanel);
@@ -555,7 +541,7 @@ const UI = (() => {
     // modal
     $("#closeDetail")?.addEventListener("click", () => toggleDetail(false));
     $('#detailModal [data-close="modal"]')?.addEventListener("click", () =>
-      toggleDetail(false)
+      toggleDetail(false),
     );
 
     document.addEventListener(
@@ -565,7 +551,7 @@ const UI = (() => {
         if (!b) return;
         openDetail(b.getAttribute("data-detail"));
       },
-      { passive: true }
+      { passive: true },
     );
   }
 
