@@ -445,14 +445,40 @@ const UI = (() => {
       document.body.scrollTop ||
       0,
     };
+    
+    // Mostrar skeleton mientras se carga la imagen
+    const skeleton = $("#detailSkeleton");
+    if (skeleton) skeleton.classList.remove("hidden");
+    
     if ($("#detailImg")) $("#detailImg").src = it.foto || "";
     if ($("#detailImg")) {
       const full = cloudi(it.foto, 960);
       const full2x = cloudi(it.foto, 1400);
-      $("#detailImg").src = full || it.foto || "";
-      $("#detailImg").srcset = `${full || it.foto || ""} 1x, ${full2x || full || it.foto || ""} 2x`;
-      $("#detailImg").decoding = "async";
-      $("#detailImg").loading = "lazy";
+      const imgEl = $("#detailImg");
+      
+      // Manejador para cuando la imagen se carga exitosamente
+      const handleImageLoad = () => {
+        const skeleton = $("#detailSkeleton");
+        if (skeleton) skeleton.classList.add("hidden");
+        imgEl.removeEventListener("load", handleImageLoad);
+        imgEl.removeEventListener("error", handleImageError);
+      };
+      
+      // Manejador para cuando hay error en la carga
+      const handleImageError = () => {
+        const skeleton = $("#detailSkeleton");
+        if (skeleton) skeleton.classList.add("hidden");
+        imgEl.removeEventListener("load", handleImageLoad);
+        imgEl.removeEventListener("error", handleImageError);
+      };
+      
+      imgEl.addEventListener("load", handleImageLoad);
+      imgEl.addEventListener("error", handleImageError);
+      
+      imgEl.src = full || it.foto || "";
+      imgEl.srcset = `${full || it.foto || ""} 1x, ${full2x || full || it.foto || ""} 2x`;
+      imgEl.decoding = "async";
+      imgEl.loading = "lazy";
     }
     if ($("#detailName")) $("#detailName").textContent = it.nombre || "";
     if ($("#detailDesc")) $("#detailDesc").textContent = it.descripcion || "";
