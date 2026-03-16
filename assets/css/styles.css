@@ -635,8 +635,8 @@ button {
 /* ===================================================
    Misc
    =================================================== */
-body.detail-open #homeScreen {
-  display: none;
+body.detail-open {
+  overflow: hidden;
 }
 
 .category-list {

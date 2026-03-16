@@ -9,6 +9,26 @@ const UI = (() => {
   const getContent = () => document.getElementById("content");
   const getSections = () =>
     Array.from(document.querySelectorAll("#content .menu__section"));
+  const getSearchState = () => {
+    const query = ($("#searchUnified")?.value || $("#search")?.value || "").trim();
+    const panel = $("#searchPanel");
+    return {
+      isOpen: panel ? !panel.classList.contains("hidden") : false,
+      query,
+    };
+  };
+  const setSearchUI = (open) => {
+    if (open) {
+      show($("#searchPanel"));
+      hide(document.getElementById("catTabs"));
+      hide(document.getElementById("optionsBar"));
+      $("#searchUnified")?.focus();
+    } else {
+      hide($("#searchPanel"));
+      show(document.getElementById("catTabs"));
+      show(document.getElementById("optionsBar"));
+    }
+  };
   const norm = (s) =>
     String(s || "")
       .toLowerCase()
@@ -159,18 +179,19 @@ const UI = (() => {
   function openSearchPanel() {
     ensureSearchOverlay();
     syncSearchInputs($("#search")?.value || "");
-    hide(document.getElementById("catTabs"));
-    hide(document.getElementById("optionsBar"));
-    show($("#searchPanel"));
-    $("#searchUnified")?.focus();
+    setSearchUI(true);
   }
 
   function closeSearchPanel(clear = true) {
-    hide($("#searchPanel"));
-    show(document.getElementById("catTabs"));
-    show(document.getElementById("optionsBar"));
+    const hadQuery = Boolean(
+      ($("#searchUnified")?.value || $("#search")?.value || "").trim()
+    );
+    setSearchUI(false);
     if (clear) syncSearchInputs("");
-    applySearch();
+    // Solo recalcular si había texto o si no estaba oculto
+    if (hadQuery || !$("#searchPanel")?.classList.contains("hidden")) {
+      applySearch();
+    }
   }
 
   const ensureEmptyBanner = () => {
@@ -365,11 +386,12 @@ const UI = (() => {
     if (!it) return;
     lastDetail = {
       id,
+      search: getSearchState(),
       scrollY:
-        window.pageYOffset ||
-        document.documentElement.scrollTop ||
-        document.body.scrollTop ||
-        0,
+      window.pageYOffset ||
+      document.documentElement.scrollTop ||
+      document.body.scrollTop ||
+      0,
     };
     if ($("#detailImg")) $("#detailImg").src = it.foto || "";
     if ($("#detailName")) $("#detailName").textContent = it.nombre || "";
@@ -382,10 +404,13 @@ const UI = (() => {
     $("#detailModal")?.classList.toggle("hidden", !open);
     document.body.classList.toggle("detail-open", open);
     if (!open && typeof window !== "undefined") {
-      closeSearchPanel(true); // restablece lista completa y tabs
-      if (!scrollToItem(lastDetail.id)) {
-        window.scrollTo({ top: lastDetail.scrollY, behavior: "auto" });
+      if (lastDetail.search) {
+        const { isOpen, query } = lastDetail.search;
+        syncSearchInputs(query || "");
+        setSearchUI(isOpen);
+        if (query) applySearch();
       }
+      window.scrollTo({ top: lastDetail.scrollY, behavior: "auto" });
     }
   }
 
@@ -529,20 +554,31 @@ const UI = (() => {
     });
     $("#clearSearch")?.addEventListener("click", () => closeSearchPanel(true));
     document.addEventListener("click", (ev) => {
-      const p = ev.target.closest("#searchPanel");
-      const trigger =
+      // no tocar el buscador mientras el modal de detalle está abierto
+      if (document.body.classList.contains("detail-open")) return;
+      // si el click fue dentro del modal (ya cerrado por backdrop/botón) no cerrar el search
+      if (ev.target.closest("#detailModal")) return;
+      const panelOpen = !$("#searchPanel")?.classList.contains("hidden");
+      if (!panelOpen) return;
+      const inPanel = ev.target.closest("#searchPanel");
+      const isTrigger =
         ev.target.closest("#openSearch") || ev.target.closest("#search");
-      if (!p && !trigger) closeSearchPanel(true);
+      const isResult = ev.target.closest("[data-detail]") || ev.target.closest(".menu-item");
+      if (!inPanel && !isTrigger && !isResult) closeSearchPanel(true);
     });
     document.addEventListener("keydown", (ev) => {
       if (ev.key === "Escape") closeSearchPanel(true);
     });
 
     // modal
-    $("#closeDetail")?.addEventListener("click", () => toggleDetail(false));
-    $('#detailModal [data-close="modal"]')?.addEventListener("click", () =>
-      toggleDetail(false),
-    );
+    $("#closeDetail")?.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      toggleDetail(false);
+    });
+    $('#detailModal [data-close="modal"]')?.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      toggleDetail(false);
+    });
 
     document.addEventListener(
       "click",
