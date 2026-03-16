@@ -450,7 +450,6 @@ const UI = (() => {
     const skeleton = $("#detailSkeleton");
     if (skeleton) skeleton.classList.remove("hidden");
     
-    if ($("#detailImg")) $("#detailImg").src = it.foto || "";
     if ($("#detailImg")) {
       const full = cloudi(it.foto, 960);
       const full2x = cloudi(it.foto, 1400);
