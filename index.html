@@ -19,31 +19,7 @@
     />
     <meta name="theme-color" content="#0b0b0c" />
     
-    <!-- 🔄 VERSIONAMIENTO CENTRALIZADO: cambiar AQUÍ para actualizar TODOS los assets -->
-    <script>
-      window.APP_VERSION = '1.0.1';
-      
-      // Auto-actualizar versiones INMEDIATAMENTE (antes que se carguen assets)
-      document.addEventListener('readystatechange', function() {
-        if (document.readyState === 'loading') return;
-        const version = window.APP_VERSION;
-        document.querySelectorAll('[data-version]').forEach(el => {
-          if (el.href) el.href = el.href.replace(/v=[\d.]+/, `v=${version}`);
-          else if (el.src) el.src = el.src.replace(/v=[\d.]+/, `v=${version}`);
-        });
-      });
-      
-      // Fallback: ejecutar si ya pasó el evento
-      if (document.readyState !== 'loading') {
-        const version = window.APP_VERSION;
-        document.querySelectorAll('[data-version]').forEach(el => {
-          if (el.href) el.href = el.href.replace(/v=[\d.]+/, `v=${version}`);
-          else if (el.src) el.src = el.src.replace(/v=[\d.]+/, `v=${version}`);
-        });
-      }
-    </script>
-    
-    <link rel="stylesheet" href="assets/css/styles.css" data-version />
+    <link rel="stylesheet" href="assets/css/styles.css?v=1.0.1" />
     
     <!-- Cargar Google Fonts de forma asincrónica -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -170,12 +146,12 @@
     </div>
 
     <!-- JS -->
-    <script src="assets/js/config.js?v=1.0.0" data-version></script>
-    <script src="assets/js/appmode.js?v=1.0.0" data-version></script>
-    <script src="assets/js/api.js?v=1.0.0" data-version></script>
-    <script src="assets/js/store.js?v=1.0.0" data-version></script>
-    <script src="assets/js/ui.js?v=1.0.0" data-version></script>
-    <script src="assets/js/main.js?v=1.0.0" defer data-version></script>
+    <script src="assets/js/config.js?v=1.0.1"></script>
+    <script src="assets/js/appmode.js?v=1.0.1"></script>
+    <script src="assets/js/api.js?v=1.0.1"></script>
+    <script src="assets/js/store.js?v=1.0.1"></script>
+    <script src="assets/js/ui.js?v=1.0.1"></script>
+    <script src="assets/js/main.js?v=1.0.1" defer></script>
 
     <!-- PRELOADER: visible hasta que el servicio responda -->
     <div id="preloader" class="preloader">
