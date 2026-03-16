@@ -1,5 +1,10 @@
 async function fetchMenu() {
-  const response = await fetch(ENDPOINT, { cache: "no-store" });
-  if (!response.ok) throw new Error("No se pudo cargar el menú");
-  return response.json(); // { config, items }
+  try {
+    const response = await fetch(ENDPOINT, { cache: "no-store" });
+    if (!response.ok) throw new Error("API error");
+    return response.json();
+  } catch (error) {
+    console.error("Failed to fetch menu:", error);
+    throw error;
+  }
 }
