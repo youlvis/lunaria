@@ -34,6 +34,46 @@ const UI = (() => {
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "");
+  const cloudi = (url, w = 400) => {
+    if (!url || typeof url !== "string") return url;
+    if (!url.includes("res.cloudinary.com")) return url;
+    const parts = url.split("/upload/");
+    if (parts.length !== 2) return url;
+    const transform = `c_fill,f_auto,q_auto,w_${w}`;
+    return `${parts[0]}/upload/${transform}/${parts[1]}`;
+  };
+  const debounce = (fn, wait = 100) => {
+    let t;
+    return (...args) => {
+      clearTimeout(t);
+      t = setTimeout(() => fn(...args), wait);
+    };
+  };
+  const withCompositionGuard = (inputEl, handler) => {
+    if (!inputEl) return;
+    let composing = false;
+    inputEl.addEventListener("compositionstart", () => (composing = true));
+    inputEl.addEventListener("compositionend", () => {
+      composing = false;
+      handler();
+    });
+    inputEl.addEventListener("input", () => {
+      if (composing) return;
+      handler();
+    });
+  };
+  const addPress = (el, handler) => {
+    if (!el) return;
+    el.addEventListener("click", handler);
+    el.addEventListener(
+      "touchend",
+      (ev) => {
+        ev.preventDefault();
+        handler(ev);
+      },
+      { passive: false },
+    );
+  };
 
   // ---------- Agrupar por categoría respetando el orden del sheet ----------
   function groupByCategory(items) {
@@ -144,9 +184,19 @@ const UI = (() => {
     const div = document.createElement("div");
     div.className = "menu-item";
     div.setAttribute("data-detail", it.id);
+    const titleNorm = norm(it.nombre || "");
+    const textNorm = norm(`${it.nombre || ""} ${it.descripcion || ""}`);
+    div.dataset.searchTitle = titleNorm;
+    div.dataset.searchText = textNorm;
+    const thumb = cloudi(it.foto, 240);
+    const thumb2x = cloudi(it.foto, 480);
     div.innerHTML = `
       <div class="menu-item__thumb" data-detail="${it.id}">
-        <img loading="lazy" src="${it.foto || ""}" alt="${it.nombre || ""}">
+        <img loading="lazy" decoding="async" fetchpriority="low" width="160" height="160"
+          src="${thumb || ""}"
+          srcset="${thumb || ""} 1x, ${thumb2x || thumb || ""} 2x"
+          sizes="(max-width: 640px) 160px, 180px"
+          alt="${it.nombre || ""}">
       </div>
       <div class="menu-item__body">
         <div class="menu-item__title">${it.nombre || ""}</div>
@@ -260,6 +310,8 @@ const UI = (() => {
       $("#search")?.value ||
       ""
     ).trim();
+    if (raw === applySearch.lastRaw) return;
+    applySearch.lastRaw = raw;
     const q = norm(raw);
     const sections = getSections();
     const container = getContent();
@@ -286,12 +338,8 @@ const UI = (() => {
       let sectionScore = 0;
 
       rows.forEach((row) => {
-        const titleText = norm(
-          row.querySelector(".menu-item__title")?.textContent || "",
-        );
-        const fullText =
-          row.dataset.searchText ||
-          (row.dataset.searchText = norm(row.textContent));
+        const titleText = row.dataset.searchTitle || "";
+        const fullText = row.dataset.searchText || "";
 
         let score = 0;
         if (titleText.includes(q))
@@ -382,6 +430,10 @@ const UI = (() => {
   };
 
   function openDetail(id) {
+    if ($("#detailModal") && !$("#detailModal")?.classList.contains("hidden")) {
+      // ya hay un detalle abierto; evitar reprocesar
+      if (lastDetail.id === id) return;
+    }
     const it = Store.state.items.find((x) => String(x.id) === String(id));
     if (!it) return;
     lastDetail = {
@@ -394,6 +446,14 @@ const UI = (() => {
       0,
     };
     if ($("#detailImg")) $("#detailImg").src = it.foto || "";
+    if ($("#detailImg")) {
+      const full = cloudi(it.foto, 960);
+      const full2x = cloudi(it.foto, 1400);
+      $("#detailImg").src = full || it.foto || "";
+      $("#detailImg").srcset = `${full || it.foto || ""} 1x, ${full2x || full || it.foto || ""} 2x`;
+      $("#detailImg").decoding = "async";
+      $("#detailImg").loading = "lazy";
+    }
     if ($("#detailName")) $("#detailName").textContent = it.nombre || "";
     if ($("#detailDesc")) $("#detailDesc").textContent = it.descripcion || "";
     if ($("#detailPrice"))
@@ -437,6 +497,10 @@ const UI = (() => {
 
     const updateActiveFromScroll = () => {
       if (programmaticNav) return;
+      if (updateActiveFromScroll.ticking) return;
+      updateActiveFromScroll.ticking = true;
+      requestAnimationFrame(() => {
+        updateActiveFromScroll.ticking = false;
       const off = calcOffset();
       const viewportTop = off + 8; // mismo offset que goToCategory/smoothScrollTo
 
@@ -451,6 +515,7 @@ const UI = (() => {
       }
 
       if (current) setActiveBySectionId(current.id, "smooth");
+      });
     };
 
     window.addEventListener("scroll", updateActiveFromScroll, {
@@ -537,22 +602,23 @@ const UI = (() => {
     });
 
     $("#openCatMenuDesk")?.addEventListener("click", openCatDesk);
-    $$('#catMenuOverlay [data-close="overlay"]').forEach(
-      (e) => (e.onclick = closeOverlay),
+    $$('#catMenuOverlay [data-close="overlay"]').forEach((e) =>
+      addPress(e, closeOverlay),
     );
 
     // search mejorado
-    $("#openSearch")?.addEventListener("click", openSearchPanel);
-    $("#search")?.addEventListener("input", () => {
+    addPress($("#openSearch"), openSearchPanel);
+    const debouncedSearch = debounce(applySearch, 280);
+    withCompositionGuard($("#search"), () => {
       ensureSearchOverlay();
       syncSearchInputs($("#search")?.value || "", { skipDesktop: true });
-      applySearch();
+      debouncedSearch();
     });
-    $("#searchUnified")?.addEventListener("input", () => {
+    withCompositionGuard($("#searchUnified"), () => {
       syncSearchInputs($("#searchUnified")?.value || "", { skipUnified: true });
-      applySearch();
+      debouncedSearch();
     });
-    $("#clearSearch")?.addEventListener("click", () => closeSearchPanel(true));
+    addPress($("#clearSearch"), () => closeSearchPanel(true));
     document.addEventListener("click", (ev) => {
       // no tocar el buscador mientras el modal de detalle está abierto
       if (document.body.classList.contains("detail-open")) return;
@@ -571,11 +637,11 @@ const UI = (() => {
     });
 
     // modal
-    $("#closeDetail")?.addEventListener("click", (ev) => {
+    addPress($("#closeDetail"), (ev) => {
       ev.stopPropagation();
       toggleDetail(false);
     });
-    $('#detailModal [data-close="modal"]')?.addEventListener("click", (ev) => {
+    addPress($('#detailModal [data-close="modal"]'), (ev) => {
       ev.stopPropagation();
       toggleDetail(false);
     });
