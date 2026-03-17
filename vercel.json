@@ -40,8 +40,8 @@
   "redirects": [
     {
       "source": "/menu",
-      "destination": "https://drive.google.com/file/d/1w-mN34NhVrIXoGsfYpnfTLTt0k02QYnp/view?usp=drivesdk",
+      "destination": "https://lunaria-two.vercel.app",
       "permanent": false
     }
-  ]
+  ] 
 }

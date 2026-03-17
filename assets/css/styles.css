@@ -84,21 +84,22 @@ img {
 }
 
 .action-bar__inner {
-  max-width: 1024px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 0.75rem;
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 0.5rem;
+  display: flex;
   align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .action-bar__group {
-  grid-column: span 2;
+  display: flex;
+  gap: 0.5rem;
 }
 
 .action-bar__group--mobile {
-  display: block;
+  display: flex;
 }
 
 .action-bar__button {
@@ -109,6 +110,7 @@ img {
   border-radius: 0.75rem;
   background: var(--bg);
   border: none;
+  cursor: pointer;
 }
 
 .action-bar__icon {
@@ -117,7 +119,8 @@ img {
 }
 
 .action-bar__current {
-  grid-column: span 8;
+  flex: 1;
+  min-width: 100px;
   font-size: 0.875rem;
   line-height: 1.25rem;
   font-weight: 600;
@@ -130,37 +133,18 @@ img {
 
 .action-bar__desktop {
   display: none;
-  grid-column: span 6;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .action-bar__input {
-  width: 18rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  background: #1f2a32;
-  color: #e7ecec;
-  outline: none;
-  font-size: 16px;
-}
-
-.action-bar__input::placeholder {
-  color: var(--muted);
+  display: none;
 }
 
 .action-bar__desktop-menu {
-  position: relative;
+  display: none;
 }
 
 .action-bar__menu-trigger {
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border);
-  background: #1f2a32;
-  color: #e7ecec;
+  display: none;
 }
 
 .action-bar__menu-list {
@@ -178,17 +162,67 @@ img {
 @media (min-width: 640px) {
   .action-bar__inner {
     padding: 0.75rem 1rem;
+    gap: 1rem;
+    flex-wrap: nowrap;
   }
-  .action-bar__group--mobile,
+
+  .action-bar__group--mobile {
+    display: none;
+  }
+
   .action-bar__current {
     display: none;
   }
-  .action-bar__desktop {
-    display: flex;
-    grid-column: 7 / 13;
+
+  .action-bar__input {
+    display: block;
+    flex: 1;
+    max-width: 280px;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    background: #1f2a32;
+    color: #e7ecec;
+    outline: none;
+    font-size: 16px;
   }
+
+  .action-bar__input::placeholder {
+    color: var(--muted);
+  }
+
+  .action-bar__desktop-menu {
+    display: flex;
+    align-items: center;
+  }
+
+  .action-bar__menu-trigger {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--border);
+    background: #1f2a32;
+    color: #e7ecec;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .action-bar__menu-trigger:hover {
+    background: #2a3540;
+  }
+
   .menu__empty {
     padding: 0 1rem;
+  }
+
+  @media (min-width: 1024px) {
+    .action-bar__inner {
+      gap: 1.5rem;
+    }
+
+    .action-bar__input {
+      max-width: 350px;
+    }
   }
 }
 
