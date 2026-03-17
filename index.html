@@ -17,9 +17,12 @@
       name="description"
       content="Menú digital de Lunaria: explora categorías, busca platos e ingredientes y descubre el detalle de cada producto."
     />
-    <meta name="theme-color" content="#0b0b0c" />
+    <meta name="theme-color" content="#39646d" />
     
-    <link rel="stylesheet" href="assets/css/styles.css?v=1.0.4" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="assets/img/icon-192.png" />
+    
+    <link rel="stylesheet" href="assets/css/styles.css?v=1.0.5" />
     
     <!-- Cargar Google Fonts de forma asincrónica -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -133,12 +136,21 @@
     </div>
 
     <!-- JS -->
-    <script src="assets/js/config.js?v=1.0.4"></script>
-    <script src="assets/js/appmode.js?v=1.0.4"></script>
-    <script src="assets/js/api.js?v=1.0.4"></script>
-    <script src="assets/js/store.js?v=1.0.4"></script>
-    <script src="assets/js/ui.js?v=1.0.4"></script>
-    <script src="assets/js/main.js?v=1.0.4" defer></script>
+    <script src="assets/js/config.js?v=1.0.5"></script>
+    <script src="assets/js/appmode.js?v=1.0.5"></script>
+    <script src="assets/js/api.js?v=1.0.5"></script>
+    <script src="assets/js/store.js?v=1.0.5"></script>
+    <script src="assets/js/ui.js?v=1.0.5"></script>
+    <script src="assets/js/main.js?v=1.0.5" defer></script>
+
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+        navigator.serviceWorker.addEventListener("message", (e) => {
+          if (e.data && e.data.type === "SW_UPDATED") location.reload();
+        });
+      }
+    </script>
 
     <!-- PRELOADER: visible hasta que el servicio responda -->
     <div id="preloader" class="preloader">

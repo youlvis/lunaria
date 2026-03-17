@@ -1,0 +1,24 @@
+{
+  "name": "Lunaria - Menú Digital",
+  "short_name": "Lunaria",
+  "description": "Menú digital de Lunaria: explora categorías, busca platos y descubre el detalle de cada producto.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f0e5c3",
+  "theme_color": "#39646d",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
