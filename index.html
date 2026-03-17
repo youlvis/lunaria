@@ -19,7 +19,7 @@
     />
     <meta name="theme-color" content="#0b0b0c" />
     
-    <link rel="stylesheet" href="assets/css/styles.css?v=1.0.2" />
+    <link rel="stylesheet" href="assets/css/styles.css?v=1.0.3" />
     
     <!-- Cargar Google Fonts de forma asincrónica -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -34,7 +34,7 @@
         <div class="hero__media">
           <img
             id="heroImg"
-            src="https://res.cloudinary.com/dh2byewas/image/upload/ar_16:9,c_crop,g_north_west,h_1165,w_1537,y_733/c_auto,h_160,w_360/IMG_6007_otxh3l.jpg"
+            src="https://res.cloudinary.com/dh2byewas/image/upload/ar_16:9,c_crop,g_north_west,h_1165,w_1537,y_733/c_auto,h_1165,w_1537/IMG_6007_otxh3l.jpg"
             alt="Fondo del menú"
             loading="lazy"
             decoding="async"
@@ -62,22 +62,6 @@
           <div class="action-bar__current">
             <div id="currentCat" class="action-bar__current-label"></div>
           </div>
-
-          <div class="action-bar__desktop">
-            <input
-              id="search"
-              type="search"
-              inputmode="search"
-              placeholder="Buscar platos o ingredientes"
-              class="action-bar__input"
-            />
-            <div class="action-bar__desktop-menu">
-              <button id="openCatMenuDesk" class="action-bar__menu-trigger">
-                Categorias
-              </button>
-              <div id="catMenuDesk" class="action-bar__menu-list hidden"></div>
-            </div>
-          </div>
         </div>
 
         <nav id="catTabs" class="category-tabs no-scrollbar"></nav>
@@ -102,8 +86,11 @@
       <!-- Menu de categorias (overlay movil) -->
       <div id="catMenuOverlay" class="overlay overlay--menu hidden">
         <div class="overlay__backdrop" data-close="overlay"></div>
-        <div class="overlay__container">
+        <div class="overlay__container" data-close="overlay">
           <div class="overlay__panel">
+            <div class="overlay__header">
+              <button class="overlay__close" data-close="overlay" aria-label="Cerrar">&times;</button>
+            </div>
             <div id="catMenu" class="overlay__content"></div>
           </div>
         </div>
@@ -146,12 +133,12 @@
     </div>
 
     <!-- JS -->
-    <script src="assets/js/config.js?v=1.0.2"></script>
-    <script src="assets/js/appmode.js?v=1.0.2"></script>
-    <script src="assets/js/api.js?v=1.0.2"></script>
-    <script src="assets/js/store.js?v=1.0.2"></script>
-    <script src="assets/js/ui.js?v=1.0.2"></script>
-    <script src="assets/js/main.js?v=1.0.2" defer></script>
+    <script src="assets/js/config.js?v=1.0.3"></script>
+    <script src="assets/js/appmode.js?v=1.0.3"></script>
+    <script src="assets/js/api.js?v=1.0.3"></script>
+    <script src="assets/js/store.js?v=1.0.3"></script>
+    <script src="assets/js/ui.js?v=1.0.3"></script>
+    <script src="assets/js/main.js?v=1.0.3" defer></script>
 
     <!-- PRELOADER: visible hasta que el servicio responda -->
     <div id="preloader" class="preloader">

@@ -6,13 +6,10 @@
     optionsBar: null,
     searchPanel: null,
     searchUnified: null,
-    searchDesktop: null,
     clearSearch: null,
     openSearch: null,
     openCatMenu: null,
-    openCatMenuDesk: null,
     catMenu: null,
-    catMenuDesk: null,
     catMenuOverlay: null,
     content: null,
     detailModal: null,
@@ -31,13 +28,10 @@
     DOM.optionsBar = document.getElementById("optionsBar");
     DOM.searchPanel = document.getElementById("searchPanel");
     DOM.searchUnified = document.getElementById("searchUnified");
-    DOM.searchDesktop = document.getElementById("search");
     DOM.clearSearch = document.getElementById("clearSearch");
     DOM.openSearch = document.getElementById("openSearch");
     DOM.openCatMenu = document.getElementById("openCatMenu");
-    DOM.openCatMenuDesk = document.getElementById("openCatMenuDesk");
     DOM.catMenu = document.getElementById("catMenu");
-    DOM.catMenuDesk = document.getElementById("catMenuDesk");
     DOM.catMenuOverlay = document.getElementById("catMenuOverlay");
     DOM.content = document.getElementById("content");
     DOM.detailModal = document.getElementById("detailModal");
@@ -51,7 +45,6 @@
   };
 
   const $ = (s) => document.querySelector(s);
-  const $$ = (s) => Array.from(document.querySelectorAll(s));
   const hide = (el) => el?.classList.add("hidden");
   const show = (el) => el?.classList.remove("hidden");
   const toggleHidden = (el, force) => el?.classList.toggle("hidden", force);
@@ -59,7 +52,7 @@
   const getSections = () => DOM.content ? Array.from(DOM.content.querySelectorAll(".menu__section")) : [];
 
   const getSearchState = () => {
-    const query = (DOM.searchUnified?.value || DOM.searchDesktop?.value || "").trim();
+    const query = (DOM.searchUnified?.value || "").trim();
     return {
       isOpen: DOM.searchPanel ? !DOM.searchPanel.classList.contains("hidden") : false,
       query,
@@ -70,12 +63,10 @@
     if (open) {
       show(DOM.searchPanel);
       hide(DOM.catTabs);
-      hide(DOM.optionsBar);
       DOM.searchUnified?.focus();
     } else {
       hide(DOM.searchPanel);
       show(DOM.catTabs);
-      show(DOM.optionsBar);
     }
   };
 
@@ -143,14 +134,6 @@
     return off;
   }
 
-  function smoothScrollTo(selector) {
-    const el = document.querySelector(selector);
-    if (!el) return;
-    const off = calcOffset();
-    const y = el.getBoundingClientRect().top + window.pageYOffset - off - 8;
-    window.scrollTo({ top: y, behavior: "smooth" });
-  }
-
   function buildTabs(cats) {
     const wrap = DOM.catTabs;
     if (!wrap) return;
@@ -168,33 +151,16 @@
 
   function buildCatMenus(cats) {
     if (DOM.catMenu) DOM.catMenu.innerHTML = "";
-    if (DOM.catMenuDesk) DOM.catMenuDesk.innerHTML = "";
 
     cats.forEach((c) => {
-      const makeBtn = () => {
-        const btn = document.createElement("button");
-        btn.className = "overlay__item";
-        btn.textContent = c;
-        return btn;
+      const btn = document.createElement("button");
+      btn.className = "overlay__item";
+      btn.textContent = c;
+      btn.onclick = () => {
+        closeOverlay();
+        goToCategory(`#sec-${slug(c)}`, "auto");
       };
-
-      if (DOM.catMenu) {
-        const btn = makeBtn();
-        btn.onclick = () => {
-          closeOverlay();
-          closeCatDesk();
-          goToCategory(`#sec-${slug(c)}`, "auto");
-        };
-        DOM.catMenu.appendChild(btn);
-      }
-      if (DOM.catMenuDesk) {
-        const btn2 = makeBtn();
-        btn2.onclick = () => {
-          closeCatDesk();
-          goToCategory(`#sec-${slug(c)}`, "auto");
-        };
-        DOM.catMenuDesk.appendChild(btn2);
-      }
+      DOM.catMenu.appendChild(btn);
     });
   }
 
@@ -230,31 +196,22 @@
     return div;
   }
 
-  function ensureSearchOverlay() {
-    if (DOM.searchPanel) DOM.searchPanel.dataset.simple = "true";
-  }
-
-  const syncSearchInputs = (value = "", { skipUnified = false, skipDesktop = false } = {}) => {
-    if (!skipDesktop && DOM.searchDesktop) DOM.searchDesktop.value = value;
-    if (!skipUnified && DOM.searchUnified) DOM.searchUnified.value = value;
+  const syncSearchInputs = (value = "") => {
+    if (DOM.searchUnified) DOM.searchUnified.value = value;
   };
 
   function openSearchPanel() {
-    ensureSearchOverlay();
-    syncSearchInputs(DOM.searchDesktop?.value || "");
     setSearchUI(true);
   }
 
   function closeSearchPanel(clear = true) {
-    const hadQuery = Boolean((DOM.searchUnified?.value || DOM.searchDesktop?.value || "").trim());
+    const hadQuery = Boolean((DOM.searchUnified?.value || "").trim());
     setSearchUI(false);
     if (clear) syncSearchInputs("");
-    if (hadQuery || (DOM.searchPanel && !DOM.searchPanel.classList.contains("hidden"))) {
-      applySearch();
-    }
+    if (hadQuery) applySearch();
   }
 
-  const ensureEmptyBanner = () => {
+  function ensureEmptyBanner() {
     let emptyBanner = document.getElementById("noResults");
     if (!emptyBanner) {
       emptyBanner = document.createElement("div");
@@ -298,8 +255,7 @@
   };
 
   function applySearch() {
-    ensureSearchOverlay();
-    const raw = (DOM.searchUnified?.value || DOM.searchDesktop?.value || "").trim();
+    const raw = (DOM.searchUnified?.value || "").trim();
     if (raw === applySearch.lastRaw) return;
     applySearch.lastRaw = raw;
     const q = norm(raw);
@@ -420,6 +376,11 @@
       imgEl.srcset = `${full || it.foto || ""} 1x, ${full2x || full || it.foto || ""} 2x`;
       imgEl.decoding = "async";
       imgEl.loading = "lazy";
+
+      const mediaEl = imgEl.parentElement;
+      if (mediaEl) {
+        mediaEl.style.backgroundImage = `url(${full || it.foto || ""})`;
+      }
     }
 
     if (DOM.detailName) DOM.detailName.textContent = it.nombre || "";
@@ -448,14 +409,6 @@
 
   function closeOverlay() {
     if (DOM.catMenuOverlay) DOM.catMenuOverlay.classList.add("hidden");
-  }
-
-  function openCatDesk() {
-    if (DOM.catMenuDesk) DOM.catMenuDesk.classList.toggle("hidden");
-  }
-
-  function closeCatDesk() {
-    if (DOM.catMenuDesk) DOM.catMenuDesk.classList.add("hidden");
   }
 
   function mountScrollSpy(cats) {
@@ -536,8 +489,6 @@
   }
 
   function wireEvents() {
-    ensureSearchOverlay();
-
     DOM.openCatMenu?.addEventListener("click", () => {
       openOverlay("#catMenuOverlay");
       const activeText = DOM.catTabs?.querySelector(".is-active")?.textContent?.trim();
@@ -548,20 +499,21 @@
       }
     });
 
-    DOM.openCatMenuDesk?.addEventListener("click", openCatDesk);
-    document.querySelectorAll('#catMenuOverlay [data-close="overlay"]').forEach((e) => addPress(e, closeOverlay));
+    document.querySelectorAll('#catMenuOverlay [data-close="overlay"]').forEach((e) => {
+      if (e.classList.contains("overlay__container")) {
+        const closeIfSelf = (ev) => { if (ev.target === e) closeOverlay(); };
+        e.addEventListener("click", closeIfSelf);
+        e.addEventListener("touchend", (ev) => {
+          if (ev.target === e) { ev.preventDefault(); closeOverlay(); }
+        }, { passive: false });
+      } else {
+        addPress(e, closeOverlay);
+      }
+    });
 
     addPress(DOM.openSearch, openSearchPanel);
     const debouncedSearch = debounce(applySearch, 400);
-    withCompositionGuard(DOM.searchDesktop, () => {
-      ensureSearchOverlay();
-      syncSearchInputs(DOM.searchDesktop?.value || "", { skipDesktop: true });
-      debouncedSearch();
-    });
-    withCompositionGuard(DOM.searchUnified, () => {
-      syncSearchInputs(DOM.searchUnified?.value || "", { skipUnified: true });
-      debouncedSearch();
-    });
+    withCompositionGuard(DOM.searchUnified, debouncedSearch);
     addPress(DOM.clearSearch, () => closeSearchPanel(true));
 
     document.addEventListener("click", (ev) => {
@@ -570,7 +522,7 @@
       const panelOpen = DOM.searchPanel && !DOM.searchPanel.classList.contains("hidden");
       if (!panelOpen) return;
       const inPanel = ev.target.closest("#searchPanel");
-      const isTrigger = ev.target.closest("#openSearch") || ev.target.closest("#search");
+      const isTrigger = ev.target.closest("#openSearch");
       const isResult = ev.target.closest("[data-detail]") || ev.target.closest(".menu-item");
       if (!inPanel && !isTrigger && !isResult) closeSearchPanel(true);
     });
@@ -604,7 +556,6 @@
     mountScrollSpy,
     wireEvents,
     applySearch,
-    smoothScrollTo,
     calcOffset,
   };
 })();
