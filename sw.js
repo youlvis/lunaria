@@ -1,18 +1,18 @@
 // Versión del Service Worker — incrementar para forzar actualización del shell
-const SW_VERSION = "1.0.5";
+const SW_VERSION = "1.0.6";
 const SHELL_CACHE = `lunaria-shell-v${SW_VERSION}`;
 
 // Archivos que forman el "app shell" (estructura de la app)
 const SHELL_ASSETS = [
   "/",
   "/index.html",
-  `/assets/css/styles.css?v=${SW_VERSION}`,
-  `/assets/js/config.js?v=${SW_VERSION}`,
-  `/assets/js/appmode.js?v=${SW_VERSION}`,
-  `/assets/js/api.js?v=${SW_VERSION}`,
-  `/assets/js/store.js?v=${SW_VERSION}`,
-  `/assets/js/ui.js?v=${SW_VERSION}`,
-  `/assets/js/main.js?v=${SW_VERSION}`,
+  "/assets/css/styles.css",
+  "/assets/js/config.js",
+  "/assets/js/appmode.js",
+  "/assets/js/api.js",
+  "/assets/js/store.js",
+  "/assets/js/ui.js",
+  "/assets/js/main.js",
   "/assets/img/search.svg",
   "/assets/img/menu-icon.svg",
   "/assets/img/close-icon.svg",
@@ -23,10 +23,13 @@ const SHELL_ASSETS = [
 const IMG_CACHE = "lunaria-images-v1";
 const MAX_CACHED_IMAGES = 150;
 
-// --- Install: cachear el app shell ---
+// --- Install: cachear el app shell (bypass browser cache para obtener archivos frescos) ---
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(SHELL_CACHE).then((cache) => cache.addAll(SHELL_ASSETS))
+    caches.open(SHELL_CACHE).then((cache) => {
+      const requests = SHELL_ASSETS.map((url) => new Request(url, { cache: "reload" }));
+      return cache.addAll(requests);
+    })
   );
   self.skipWaiting();
 });

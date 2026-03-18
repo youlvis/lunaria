@@ -1,5 +1,5 @@
-const MENU_CACHE_KEY = `lunaria_menu_v${MENU_VERSION}`;
-const MENU_CACHE_TTL = 14 * 24 * 60 * 60 * 1000;
+const MENU_CACHE_KEY = "lunaria_menu";
+const MENU_CACHE_TTL = 14 * 24 * 60 * 60 * 1000; // 2 semanas
 
 function getCachedMenu() {
   try {
@@ -15,19 +15,8 @@ function getCachedMenu() {
 
 function setCachedMenu(data) {
   try {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith("lunaria_menu_v") && key !== MENU_CACHE_KEY) {
-        localStorage.removeItem(key);
-      }
-    }
-    localStorage.setItem(
-      MENU_CACHE_KEY,
-      JSON.stringify({ ts: Date.now(), data }),
-    );
-  } catch {
-    /* quota exceeded – ignore */
-  }
+    localStorage.setItem(MENU_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+  } catch { /* quota exceeded */ }
 }
 
 async function fetchMenu() {
