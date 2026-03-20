@@ -465,6 +465,7 @@ img {
   position: fixed;
   inset: 0;
   z-index: 50;
+  overflow: hidden;
 }
 
 .detail-modal__backdrop {
@@ -501,7 +502,7 @@ img {
 
 .detail-modal__media {
   height: 65vh;
-  background: #1f2a32;
+  background: var(--surface-1);
   overflow: hidden;
   position: relative;
 }
@@ -704,6 +705,8 @@ img {
 }
 
 body.detail-open {
+  position: fixed;
+  width: 100%;
   overflow: hidden;
 }
 

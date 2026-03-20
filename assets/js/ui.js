@@ -390,9 +390,13 @@
   }
 
   function toggleDetail(open) {
+    if (open) {
+      document.body.style.top = `-${lastDetail.scrollY || 0}px`;
+    }
     if (DOM.detailModal) DOM.detailModal.classList.toggle("hidden", !open);
     document.body.classList.toggle("detail-open", open);
     if (!open) {
+      document.body.style.top = "";
       if (lastDetail.search) {
         const { isOpen, query } = lastDetail.search;
         syncSearchInputs(query || "");
