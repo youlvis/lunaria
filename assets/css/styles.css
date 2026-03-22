@@ -96,8 +96,13 @@ img {
   top: 0;
   z-index: 30;
   background: var(--surface-1);
-  backdrop-filter: blur(8px);
   color: var(--text);
+}
+
+.action-bar.is-scrolling {
+  position: fixed;
+  left: 0;
+  right: 0;
 }
 
 .action-bar__inner {
@@ -109,6 +114,7 @@ img {
   gap: 0.75rem;
   flex-wrap: wrap;
   min-height: 2.5rem;
+  background: var(--surface-1);
 }
 
 .action-bar__group {
@@ -179,11 +185,13 @@ img {
 }
 
 .category-tabs {
+  position: relative;
   margin: 0 auto;
   padding: 0 0.75rem 0.5rem;
   display: flex;
   gap: 1rem;
   overflow-x: auto;
+  background: var(--surface-1);
 }
 
 .category-tabs__item {

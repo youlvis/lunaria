@@ -144,7 +144,7 @@
       b.dataset.target = `#sec-${slug(c)}`;
       b.textContent = c;
       if (idx === 0) b.classList.add("is-active");
-      b.onclick = () => goToCategory(b.dataset.target, "auto");
+      b.onclick = () => goToCategory(b.dataset.target, "smooth");
       wrap.appendChild(b);
     });
   }
@@ -158,7 +158,7 @@
       btn.textContent = c;
       btn.onclick = () => {
         closeOverlay();
-        goToCategory(`#sec-${slug(c)}`, "auto");
+        goToCategory(`#sec-${slug(c)}`, "smooth");
       };
       DOM.catMenu.appendChild(btn);
     });
@@ -481,15 +481,23 @@
     if (DOM.currentCat) DOM.currentCat.textContent = pretty;
   }
 
-  function goToCategory(selector, behavior = "auto") {
+  function goToCategory(selector, behavior = "smooth") {
     const el = document.querySelector(selector);
     if (!el) return;
     programmaticNav = true;
+    const bar = DOM.actionBar;
     const off = calcOffset();
     const y = el.getBoundingClientRect().top + window.pageYOffset - off - 8;
+
+    if (bar) bar.classList.add("is-scrolling");
     window.scrollTo({ top: y, behavior });
     setActiveBySectionId(el.id, "auto");
-    setTimeout(() => { programmaticNav = false; }, 120);
+
+    const unlock = () => {
+      if (bar) bar.classList.remove("is-scrolling");
+      programmaticNav = false;
+    };
+    setTimeout(unlock, behavior === "smooth" ? 350 : 50);
   }
 
   function wireEvents() {
