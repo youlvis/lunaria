@@ -1,18 +1,21 @@
 // Versión del Service Worker — incrementar para forzar actualización del shell
-const SW_VERSION = "1.1.6";
+const SW_VERSION = "1.2.4";
 const SHELL_CACHE = `lunaria-shell-v${SW_VERSION}`;
 
 // Archivos que forman el "app shell" (estructura de la app)
 const SHELL_ASSETS = [
   "/",
   "/index.html",
+  "/eventos.html",
   "/assets/css/styles.css",
+  "/assets/css/eventos.css",
   "/assets/js/config.js",
   "/assets/js/appmode.js",
   "/assets/js/api.js",
   "/assets/js/store.js",
   "/assets/js/ui.js",
   "/assets/js/main.js",
+  "/assets/js/eventos.js",
   "/assets/img/search.svg",
   "/assets/img/menu-icon.svg",
   "/assets/img/close-icon.svg",
