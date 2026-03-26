@@ -50,6 +50,12 @@
   const toggleHidden = (el, force) => el?.classList.toggle("hidden", force);
   const getContent = () => DOM.content;
   const getSections = () => DOM.content ? Array.from(DOM.content.querySelectorAll(".menu__section")) : [];
+  const getScrollY = () =>
+    window.pageYOffset ||
+    document.documentElement.scrollTop ||
+    document.body.scrollTop ||
+    0;
+  const MENU_HISTORY_KEY = "__menuView";
 
   const getSearchState = () => {
     const query = (DOM.searchUnified?.value || "").trim();
@@ -338,18 +344,144 @@
   }
 
   let lastDetail = { id: null, scrollY: 0 };
+  let menuHistoryWired = false;
 
-  function openDetail(id) {
+  function normalizeSearchState(search) {
+    return {
+      isOpen: Boolean(search && search.isOpen),
+      query: typeof search?.query === "string" ? search.query : "",
+    };
+  }
+
+  function buildMenuSnapshot(overrides = {}) {
+    return {
+      search: normalizeSearchState(
+        overrides.search !== undefined ? overrides.search : getSearchState()
+      ),
+      scrollY:
+        typeof overrides.scrollY === "number"
+          ? overrides.scrollY
+          : getScrollY(),
+    };
+  }
+
+  function isMenuHistoryState(state) {
+    return Boolean(state && state[MENU_HISTORY_KEY]);
+  }
+
+  function buildMenuHistoryState(overrides = {}) {
+    const snapshot = buildMenuSnapshot(overrides);
+    return {
+      [MENU_HISTORY_KEY]: true,
+      detailId:
+        overrides.detailId === null || overrides.detailId === undefined
+          ? null
+          : String(overrides.detailId),
+      search: snapshot.search,
+      scrollY: snapshot.scrollY,
+    };
+  }
+
+  function replaceMenuHistoryState(overrides = {}) {
+    window.history.replaceState(
+      buildMenuHistoryState(overrides),
+      "",
+      window.location.href
+    );
+  }
+
+  function pushMenuHistoryState(overrides = {}) {
+    window.history.pushState(
+      buildMenuHistoryState(overrides),
+      "",
+      window.location.href
+    );
+  }
+
+  function restoreMenuSnapshot(snapshot) {
+    const normalized = buildMenuSnapshot(snapshot);
+    syncSearchInputs(normalized.search.query || "");
+    setSearchUI(normalized.search.isOpen);
+    applySearch();
+    window.scrollTo({ top: normalized.scrollY, behavior: "auto" });
+  }
+
+  function closeDetail(options = {}) {
+    const historyMode = options.history || "back";
+    const snapshot = buildMenuSnapshot(options.snapshot);
+
+    if (
+      historyMode === "back" &&
+      isMenuHistoryState(window.history.state) &&
+      window.history.state.detailId
+    ) {
+      window.history.back();
+      return;
+    }
+
+    if (historyMode === "replace") {
+      replaceMenuHistoryState({ ...snapshot, detailId: null });
+    }
+
+    toggleDetail(false, snapshot);
+  }
+
+  function applyMenuHistoryState(state) {
+    if (!isMenuHistoryState(state)) return false;
+
+    const snapshot = buildMenuSnapshot({
+      search: state.search,
+      scrollY: Number(state.scrollY) || 0,
+    });
+
+    if (state.detailId) {
+      openDetail(state.detailId, { history: "pop", snapshot });
+    } else {
+      closeDetail({ history: "pop", snapshot });
+    }
+
+    return true;
+  }
+
+  function handleMenuPopState(event) {
+    if (!isMenuHistoryState(event.state)) return;
+    applyMenuHistoryState(event.state);
+  }
+
+  function initMenuHistory() {
+    if (!menuHistoryWired) {
+      window.addEventListener("popstate", handleMenuPopState);
+      menuHistoryWired = true;
+    }
+
+    const state = window.history.state;
+    if (!isMenuHistoryState(state)) {
+      replaceMenuHistoryState({ detailId: null });
+      return;
+    }
+
+    applyMenuHistoryState(state);
+  }
+
+  function openDetail(id, options = {}) {
     if (DOM.detailModal && !DOM.detailModal.classList.contains("hidden")) {
       if (lastDetail.id === id) return;
     }
     const it = Store.state.items.find((x) => String(x.id) === String(id));
     if (!it) return;
+    const snapshot = buildMenuSnapshot(options.snapshot);
     lastDetail = {
       id,
-      search: getSearchState(),
-      scrollY: window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0,
+      search: snapshot.search,
+      scrollY: snapshot.scrollY,
     };
+
+    if (options.history === "push") {
+      replaceMenuHistoryState({ ...snapshot, detailId: null });
+      pushMenuHistoryState({ ...snapshot, detailId: id });
+    } else if (options.history === "replace") {
+      replaceMenuHistoryState({ ...snapshot, detailId: id });
+    }
 
     if (DOM.detailSkeleton) DOM.detailSkeleton.classList.remove("hidden");
 
@@ -389,7 +521,7 @@
     toggleDetail(true);
   }
 
-  function toggleDetail(open) {
+  function toggleDetail(open, snapshot) {
     if (open) {
       document.body.style.top = `-${lastDetail.scrollY || 0}px`;
     }
@@ -397,13 +529,8 @@
     document.body.classList.toggle("detail-open", open);
     if (!open) {
       document.body.style.top = "";
-      if (lastDetail.search) {
-        const { isOpen, query } = lastDetail.search;
-        syncSearchInputs(query || "");
-        setSearchUI(isOpen);
-        if (query) applySearch();
-      }
-      window.scrollTo({ top: lastDetail.scrollY, behavior: "auto" });
+      restoreMenuSnapshot(snapshot || lastDetail);
+      lastDetail = { id: null, search: null, scrollY: 0 };
     }
   }
 
@@ -415,28 +542,78 @@
     if (DOM.catMenuOverlay) DOM.catMenuOverlay.classList.add("hidden");
   }
 
+  let scrollSpyFrame = 0;
+  let scrollSpyToken = 0;
+  let syncActiveSection = () => {};
+
+  function getMostProminentSection(sections) {
+    if (!sections.length) return null;
+    const scrollY = getScrollY();
+    const maxScrollY = Math.max(
+      0,
+      document.documentElement.scrollHeight - window.innerHeight
+    );
+    if (scrollY <= 8) return sections[0];
+    if (maxScrollY - scrollY <= 8) return sections[sections.length - 1];
+
+    const off = calcOffset();
+    const viewportTop = off + 8;
+    const viewportBottom = window.innerHeight;
+    const focusBandHeight = Math.max(
+      180,
+      Math.min(viewportBottom - viewportTop, (viewportBottom - viewportTop) * 0.45)
+    );
+    const focusTop = viewportTop;
+    const focusBottom = Math.min(viewportBottom, focusTop + focusBandHeight);
+    const focusCenter = (focusTop + focusBottom) / 2;
+    let current = sections[0];
+    let bestScore = Number.NEGATIVE_INFINITY;
+    let fallback = sections[0];
+    let fallbackDistance = Number.POSITIVE_INFINITY;
+
+    sections.forEach((sec) => {
+      const rect = sec.getBoundingClientRect();
+      const titleRect =
+        sec.querySelector(".menu__section-title")?.getBoundingClientRect() || rect;
+      const visibleTop = Math.max(rect.top, focusTop);
+      const visibleBottom = Math.min(rect.bottom, focusBottom);
+      const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+      const distanceToCenter = Math.abs(titleRect.top - focusCenter);
+
+      if (distanceToCenter < fallbackDistance) {
+        fallbackDistance = distanceToCenter;
+        fallback = sec;
+      }
+
+      if (visibleHeight <= 0) return;
+
+      const score = visibleHeight * 1000 - distanceToCenter * 8;
+      if (score > bestScore) {
+        bestScore = score;
+        current = sec;
+      }
+    });
+
+    return bestScore === Number.NEGATIVE_INFINITY ? fallback : current;
+  }
+
   function mountScrollSpy(cats) {
     const sections = cats.map((c) => document.querySelector(`#sec-${slug(c)}`)).filter(Boolean);
     if (!sections.length) return;
 
+    syncActiveSection = () => {
+      const current = getMostProminentSection(sections);
+      if (current) setActiveBySectionId(current.id, "auto");
+    };
+
     const updateActiveFromScroll = () => {
       if (programmaticNav) return;
-      if (updateActiveFromScroll.ticking) return;
-      updateActiveFromScroll.ticking = true;
-      requestAnimationFrame(() => {
-        updateActiveFromScroll.ticking = false;
-        const off = calcOffset();
-        const viewportTop = off + 8;
-        let current = sections[0];
-        for (const sec of sections) {
-          const rect = sec.getBoundingClientRect();
-          if (rect.top - viewportTop <= 0) {
-            current = sec;
-          } else {
-            break;
-          }
-        }
-        if (current) setActiveBySectionId(current.id, "smooth");
+      if (scrollSpyFrame) return;
+      const token = scrollSpyToken;
+      scrollSpyFrame = requestAnimationFrame(() => {
+        scrollSpyFrame = 0;
+        if (programmaticNav || token !== scrollSpyToken) return;
+        syncActiveSection();
       });
     };
 
@@ -448,7 +625,7 @@
       if (active) ensureTabVisible(active, "auto");
     }, { passive: true });
 
-    updateActiveFromScroll();
+    syncActiveSection();
   }
 
   const slug = (s) =>
@@ -469,10 +646,128 @@
   }
 
   let programmaticNav = false;
+  let programmaticNavFrame = 0;
+  let programmaticNavTargetY = 0;
+  let programmaticNavLastY = 0;
+  let programmaticNavStableFrames = 0;
+  let programmaticNavStartedAt = 0;
+  let categoryScrollFrame = 0;
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function stopCategoryScrollAnimation() {
+    if (!categoryScrollFrame) return;
+    cancelAnimationFrame(categoryScrollFrame);
+    categoryScrollFrame = 0;
+  }
+
+  function animateWindowScrollTo(targetY, duration = 220) {
+    stopCategoryScrollAnimation();
+
+    const startY = getScrollY();
+    const distance = targetY - startY;
+    if (Math.abs(distance) <= 2) {
+      window.scrollTo({ top: targetY, behavior: "auto" });
+      return;
+    }
+
+    const startAt = performance.now();
+    const step = (now) => {
+      const elapsed = now - startAt;
+      const progress = Math.min(1, elapsed / duration);
+      const eased = easeOutCubic(progress);
+      window.scrollTo({
+        top: Math.round(startY + distance * eased),
+        behavior: "auto",
+      });
+
+      if (progress >= 1) {
+        categoryScrollFrame = 0;
+        window.scrollTo({ top: targetY, behavior: "auto" });
+        return;
+      }
+
+      categoryScrollFrame = requestAnimationFrame(step);
+    };
+
+    categoryScrollFrame = requestAnimationFrame(step);
+  }
+
+  function unlockProgrammaticNav() {
+    if (programmaticNavFrame) cancelAnimationFrame(programmaticNavFrame);
+    programmaticNav = false;
+    programmaticNavFrame = 0;
+    programmaticNavTargetY = 0;
+    programmaticNavLastY = 0;
+    programmaticNavStableFrames = 0;
+    programmaticNavStartedAt = 0;
+    DOM.actionBar?.classList.remove("is-scrolling");
+    syncActiveSection();
+  }
+
+  function watchProgrammaticNav() {
+    if (!programmaticNav) return;
+
+    const currentY = getScrollY();
+    const deltaToTarget = Math.abs(currentY - programmaticNavTargetY);
+    const deltaToLast = Math.abs(currentY - programmaticNavLastY);
+    const elapsed = performance.now() - programmaticNavStartedAt;
+
+    if (deltaToTarget <= 2) {
+      unlockProgrammaticNav();
+      return;
+    }
+
+    if (deltaToLast <= 1) {
+      programmaticNavStableFrames += 1;
+    } else {
+      programmaticNavStableFrames = 0;
+    }
+
+    if (programmaticNavStableFrames >= 6 || elapsed >= 1800) {
+      unlockProgrammaticNav();
+      return;
+    }
+
+    programmaticNavLastY = currentY;
+    programmaticNavFrame = requestAnimationFrame(watchProgrammaticNav);
+  }
+
+  function lockProgrammaticNav(targetY, behavior) {
+    if (scrollSpyFrame) {
+      cancelAnimationFrame(scrollSpyFrame);
+      scrollSpyFrame = 0;
+    }
+    scrollSpyToken += 1;
+
+    programmaticNav = true;
+    programmaticNavTargetY = targetY;
+    programmaticNavLastY = getScrollY();
+    programmaticNavStableFrames = 0;
+    programmaticNavStartedAt = performance.now();
+
+    if (programmaticNavFrame) cancelAnimationFrame(programmaticNavFrame);
+
+    if (behavior !== "smooth") {
+      setTimeout(unlockProgrammaticNav, 50);
+      return;
+    }
+
+    programmaticNavFrame = requestAnimationFrame(watchProgrammaticNav);
+  }
 
   function setActiveBySectionId(id, behavior = "smooth") {
     const btn = DOM.catTabs?.querySelector(`button[data-target="#${id}"]`);
     if (!btn) return;
+    const active = DOM.catTabs?.querySelector(".is-active");
+    if (active === btn) {
+      const label = id.replace("sec-", "");
+      const pretty = label.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+      if (DOM.currentCat) DOM.currentCat.textContent = pretty;
+      return;
+    }
     DOM.catTabs?.querySelectorAll("button").forEach((b) => b.classList.remove("is-active"));
     btn.classList.add("is-active");
     ensureTabVisible(btn, behavior);
@@ -484,20 +779,18 @@
   function goToCategory(selector, behavior = "smooth") {
     const el = document.querySelector(selector);
     if (!el) return;
-    programmaticNav = true;
-    const bar = DOM.actionBar;
     const off = calcOffset();
     const y = el.getBoundingClientRect().top + window.pageYOffset - off - 8;
 
-    if (bar) bar.classList.add("is-scrolling");
-    window.scrollTo({ top: y, behavior });
+    DOM.actionBar?.classList.add("is-scrolling");
+    lockProgrammaticNav(y, behavior);
+    if (behavior === "smooth") {
+      animateWindowScrollTo(y);
+    } else {
+      stopCategoryScrollAnimation();
+      window.scrollTo({ top: y, behavior: "auto" });
+    }
     setActiveBySectionId(el.id, "auto");
-
-    const unlock = () => {
-      if (bar) bar.classList.remove("is-scrolling");
-      programmaticNav = false;
-    };
-    setTimeout(unlock, behavior === "smooth" ? 350 : 50);
   }
 
   function wireEvents() {
@@ -545,18 +838,20 @@
 
     addPress(DOM.closeDetail, (ev) => {
       ev.stopPropagation();
-      toggleDetail(false);
+      closeDetail();
     });
     addPress(document.querySelector('#detailModal [data-close="modal"]'), (ev) => {
       ev.stopPropagation();
-      toggleDetail(false);
+      closeDetail();
     });
 
     document.addEventListener("click", (ev) => {
       const b = ev.target.closest("[data-detail]");
       if (!b) return;
-      openDetail(b.getAttribute("data-detail"));
+      openDetail(b.getAttribute("data-detail"), { history: "push" });
     }, { passive: true });
+
+    initMenuHistory();
   }
 
   return {
