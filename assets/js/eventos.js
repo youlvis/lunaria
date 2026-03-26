@@ -28,6 +28,7 @@
     "Paso 4 de 5",
     "Paso 5 de 5",
   ];
+  const HISTORY_STATE_KEY = "__evFlow";
 
   /* ═══════════════════════════════════════
      UTILS
@@ -62,6 +63,13 @@
     if (html !== undefined) e.textContent = html;
     return e;
   };
+  const deepClone = (value, fallback) => {
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch {
+      return fallback;
+    }
+  };
 
   /* ═══════════════════════════════════════
      STORE
@@ -75,9 +83,10 @@
     categoriaId: null,
     selecciones: {},
     opciones: {},
-    loading: true,
+    loading: false,
     error: null,
   };
+  let historyIndex = 0;
 
   function getCategoria() {
     if (!store.data || !store.categoriaId) return null;
@@ -96,6 +105,7 @@
   function resetSelecciones() {
     store.selecciones = {};
     store.opciones = {};
+    syncHistoryState();
   }
 
   function getCounterTotal(secId) {
@@ -121,6 +131,7 @@
     } else {
       store.selecciones[secId][itemId] = val;
     }
+    syncHistoryState();
   }
 
   function getRadioSelection(secId) {
@@ -129,6 +140,7 @@
 
   function setRadioSelection(secId, itemId) {
     store.selecciones[secId] = itemId;
+    syncHistoryState();
   }
 
   function getOpcion(itemId, opKey) {
@@ -138,6 +150,7 @@
   function setOpcion(itemId, opKey, value) {
     if (!store.opciones[itemId]) store.opciones[itemId] = {};
     store.opciones[itemId][opKey] = value;
+    syncHistoryState();
   }
 
   function getWAPhone() {
@@ -155,7 +168,10 @@
   let dataPromise = null;
 
   function loadData() {
+    if (store.data) return Promise.resolve(store.data);
     if (dataPromise) return dataPromise;
+    store.loading = true;
+    store.error = null;
     dataPromise = fetch(API_URL)
       .then((r) => {
         if (!r.ok) throw new Error("Error de red");
@@ -164,14 +180,28 @@
       .then((raw) => {
         store.data = normalizeData(raw);
         store.loading = false;
+        dataPromise = null;
         return store.data;
       })
       .catch((err) => {
         store.error = err;
         store.loading = false;
+        dataPromise = null;
         throw err;
       });
     return dataPromise;
+  }
+
+  function requestEventosData() {
+    return loadData()
+      .then((data) => {
+        if (store.step >= STEP.CATEGORIAS) render();
+        return data;
+      })
+      .catch((err) => {
+        if (store.step >= STEP.CATEGORIAS) render();
+        throw err;
+      });
   }
 
   function normalizeData(raw) {
@@ -322,21 +352,127 @@
      NAVIGATION
      ═══════════════════════════════════════ */
 
-  function goTo(step) {
-    store.step = step;
+  function normalizeStep(step) {
+    const value = Math.round(Number(step) || STEP.WELCOME);
+    return Math.min(STEP.ENVIO, Math.max(STEP.WELCOME, value));
+  }
+
+  function normalizePersonas(value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return MIN_PERSONAS;
+    return Math.max(0, Math.round(parsed));
+  }
+
+  function isFlowHistoryState(state) {
+    return Boolean(state && state[HISTORY_STATE_KEY]);
+  }
+
+  function buildFlowHistoryState(step) {
+    return {
+      [HISTORY_STATE_KEY]: true,
+      index: historyIndex,
+      step: normalizeStep(step),
+      personas: normalizePersonas(store.personas),
+      fechaEvento:
+        typeof store.fechaEvento === "string" ? store.fechaEvento : "",
+      categoriaId:
+        store.categoriaId === null || store.categoriaId === undefined
+          ? null
+          : String(store.categoriaId),
+      selecciones: deepClone(store.selecciones, {}),
+      opciones: deepClone(store.opciones, {}),
+    };
+  }
+
+  function applyFlowHistoryState(state) {
+    if (!isFlowHistoryState(state)) return false;
+    historyIndex = Math.max(0, Number(state.index) || 0);
+    store.step = normalizeStep(state.step);
+    store.personas = normalizePersonas(state.personas);
+    store.fechaEvento =
+      typeof state.fechaEvento === "string" ? state.fechaEvento : "";
+    store.categoriaId =
+      state.categoriaId === null || state.categoriaId === undefined
+        ? null
+        : String(state.categoriaId);
+    store.selecciones =
+      state.selecciones && typeof state.selecciones === "object"
+        ? deepClone(state.selecciones, {})
+        : {};
+    store.opciones =
+      state.opciones && typeof state.opciones === "object"
+        ? deepClone(state.opciones, {})
+        : {};
+    return true;
+  }
+
+  function replaceHistoryState(step) {
+    if (!window.history || !window.history.replaceState) return;
+    window.history.replaceState(
+      buildFlowHistoryState(step),
+      "",
+      window.location.href
+    );
+  }
+
+  function pushHistoryState(step) {
+    if (!window.history || !window.history.pushState) return;
+    historyIndex += 1;
+    window.history.pushState(
+      buildFlowHistoryState(step),
+      "",
+      window.location.href
+    );
+  }
+
+  function syncHistoryState() {
+    if (!isFlowHistoryState(window.history.state)) return;
+    replaceHistoryState(store.step);
+  }
+
+  function goTo(step, options) {
+    const nextStep = normalizeStep(step);
+    const historyMode = options && options.history ? options.history : "push";
+    const shouldScroll = !options || options.scroll !== false;
+    store.step = nextStep;
+
+    if (historyMode === "replace") {
+      replaceHistoryState(nextStep);
+    } else if (historyMode === "push") {
+      pushHistoryState(nextStep);
+    }
+
     render();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    if (shouldScroll) {
+      window.scrollTo({
+        top: 0,
+        behavior: historyMode === "pop" ? "auto" : "smooth",
+      });
+    }
+  }
+
+  function getPreviousStep() {
+    if (store.step <= STEP.WELCOME) return STEP.WELCOME;
+    const cat = getCategoria();
+    if (store.step === STEP.ENVIO && cat && isPersonalizado(cat)) {
+      return STEP.CATEGORIAS;
+    }
+    return normalizeStep(store.step - 1);
   }
 
   function goBack() {
     if (store.step <= STEP.WELCOME) return;
-    const cat = getCategoria();
-    // Personalizado: from envio go back to categorias (skip config+resumen)
-    if (store.step === STEP.ENVIO && cat && isPersonalizado(cat)) {
-      goTo(STEP.CATEGORIAS);
+    if (isFlowHistoryState(window.history.state) && historyIndex > 0) {
+      window.history.back();
       return;
     }
-    goTo(store.step - 1);
+    goTo(getPreviousStep(), { history: "replace" });
+  }
+
+  function handlePopState(event) {
+    if (!applyFlowHistoryState(event.state)) return;
+    goTo(store.step, { history: "pop" });
   }
 
   function updateProgress() {
@@ -397,6 +533,46 @@
     updateProgress();
   }
 
+  function renderPendingStep(container, title, subtitle) {
+    const header = el("div", "ev-step__header");
+    header.innerHTML = `
+      <h2 class="ev-step__title">${esc(title)}</h2>
+      <p class="ev-step__subtitle">${esc(
+        subtitle || "Cargando informacion del menu..."
+      )}</p>
+    `;
+    container.appendChild(header);
+  }
+
+  function renderCategoriasSkeleton(container) {
+    const header = el("div", "ev-step__header");
+    header.innerHTML = `
+      <h2 class="ev-step__title">Elige tu tipo de menú</h2>
+      <p class="ev-step__subtitle">Estamos preparando las opciones para tu evento</p>
+    `;
+    container.appendChild(header);
+
+    const grid = el("div", "ev-cards ev-cards--skeleton");
+
+    for (let i = 0; i < 4; i += 1) {
+      const card = el("div", "ev-card ev-card--skeleton");
+      card.setAttribute("aria-hidden", "true");
+      card.innerHTML = `
+        <div class="ev-card__img-wrap ev-card__img-wrap--skeleton">
+          <span class="ev-skeleton ev-skeleton--media"></span>
+        </div>
+        <div class="ev-card__body">
+          <span class="ev-skeleton ev-skeleton--title"></span>
+          <span class="ev-skeleton ev-skeleton--line"></span>
+          <span class="ev-skeleton ev-skeleton--line ev-skeleton--line-short"></span>
+        </div>
+      `;
+      grid.appendChild(card);
+    }
+
+    container.appendChild(grid);
+  }
+
   /* ═══════════════════════════════════════
      STEP 1: WELCOME
      ═══════════════════════════════════════ */
@@ -430,7 +606,9 @@
     requestAnimationFrame(() => {
       const btn = $("#evStartBtn");
       if (!btn) return;
-      btn.addEventListener("click", async () => {
+      btn.addEventListener("click", () => {
+        goTo(STEP.PERSONAS);
+        return; /* endpoint now loads in the personas step
         if (store.data) {
           goTo(STEP.PERSONAS);
           return;
@@ -456,6 +634,7 @@
           btn.textContent = "Reintentar";
           btn.disabled = false;
         }
+        */
       });
     });
   }
@@ -502,6 +681,7 @@
 
     dateInput.addEventListener("change", () => {
       store.fechaEvento = dateInput.value;
+      syncHistoryState();
     });
 
     // Personas label
@@ -542,6 +722,7 @@
       const isValid = store.personas >= MIN_PERSONAS;
       valueInput.classList.toggle("ev-stepper__input--invalid", !isValid);
       errorMsg.classList.toggle("ev-hidden", isValid);
+      syncHistoryState();
     };
 
     const decOne = () => {
@@ -567,6 +748,7 @@
       const isValid = store.personas >= MIN_PERSONAS;
       valueInput.classList.toggle("ev-stepper__input--invalid", !isValid);
       errorMsg.classList.toggle("ev-hidden", isValid);
+      syncHistoryState();
     });
 
     valueInput.addEventListener("blur", () => {
@@ -579,6 +761,9 @@
 
     btnNext.addEventListener("click", () => {
       if (store.personas >= MIN_PERSONAS) {
+        if (!store.data) {
+          requestEventosData().catch(() => {});
+        }
         goTo(STEP.CATEGORIAS);
       } else {
         errorMsg.classList.remove("ev-hidden");
@@ -591,7 +776,30 @@
      ═══════════════════════════════════════ */
 
   function renderCategorias(container) {
+    if (store.loading && !store.data) {
+      renderCategoriasSkeleton(container);
+      return;
+    }
+
+    if (store.error && !store.data) {
+      showError(container, "No pudimos cargar los menÃºs para eventos.", {
+        onRetry: () => {
+          requestEventosData().catch(() => {});
+          render();
+        },
+      });
+      return;
+    }
+
     const cats = (store.data && store.data.categorias) || [];
+    if (!cats.length) {
+      renderPendingStep(
+        container,
+        "Elige tu tipo de menÃº",
+        "No hay categorÃ­as disponibles en este momento."
+      );
+      return;
+    }
 
     const header = el("div", "ev-step__header");
     header.innerHTML = `
@@ -667,9 +875,14 @@
      ═══════════════════════════════════════ */
 
   function renderConfigurador(container) {
+    if (store.loading && !store.data) {
+      renderPendingStep(container, "Cargando menu");
+      return;
+    }
+
     const cat = getCategoria();
     if (!cat) {
-      goTo(STEP.CATEGORIAS);
+      goTo(STEP.CATEGORIAS, { history: "replace" });
       return;
     }
 
@@ -1434,9 +1647,14 @@
      ═══════════════════════════════════════ */
 
   function renderResumen(container) {
+    if (store.loading && !store.data) {
+      renderPendingStep(container, "Cargando resumen");
+      return;
+    }
+
     const cat = getCategoria();
     if (!cat) {
-      goTo(STEP.CATEGORIAS);
+      goTo(STEP.CATEGORIAS, { history: "replace" });
       return;
     }
 
@@ -1616,6 +1834,17 @@
      ═══════════════════════════════════════ */
 
   function renderEnvio(container) {
+    if (store.loading && !store.data) {
+      renderPendingStep(container, "Cargando envio");
+      return;
+    }
+
+    const cat = getCategoria();
+    if (!cat) {
+      goTo(STEP.CATEGORIAS, { history: "replace" });
+      return;
+    }
+
     const msg = buildWAMessage();
 
     const header = el("div", "ev-step__header");
@@ -1796,13 +2025,20 @@
      ERROR HELPER
      ═══════════════════════════════════════ */
 
-  function showError(container, message) {
+  function showError(container, message, options) {
     container.innerHTML = "";
     const div = el("div", "ev-error");
     const text = el("p", "ev-error__text", message);
     const btn = el("button", "ev-btn ev-btn--primary");
-    btn.textContent = "Reintentar";
-    btn.addEventListener("click", () => location.reload());
+    btn.textContent =
+      options && options.buttonText ? options.buttonText : "Reintentar";
+    btn.addEventListener("click", () => {
+      if (options && typeof options.onRetry === "function") {
+        options.onRetry();
+        return;
+      }
+      location.reload();
+    });
     div.append(text, btn);
     container.appendChild(div);
   }
@@ -1812,12 +2048,17 @@
      ═══════════════════════════════════════ */
 
   function init() {
-    // Start fetching API data in background
-    loadData().catch(() => {});
+    applyFlowHistoryState(window.history.state);
+    replaceHistoryState(store.step);
+
+    if (store.step >= STEP.CATEGORIAS && !store.data) {
+      requestEventosData().catch(() => {});
+    }
 
     // Wire back button
     const back = refs.back();
     if (back) back.addEventListener("click", goBack);
+    window.addEventListener("popstate", handlePopState);
 
     // Initial render → welcome screen
     render();

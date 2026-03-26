@@ -101,6 +101,12 @@ button {
   }
 }
 
+@keyframes evSkeleton {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* ───── APP CONTAINER ───── */
 
 .ev {
@@ -551,6 +557,69 @@ button {
 .ev-card--active .ev-card__check {
   opacity: 1;
   transform: scale(1);
+}
+
+.ev-cards--skeleton {
+  pointer-events: none;
+}
+
+.ev-card--skeleton {
+  cursor: default;
+  border-color: transparent;
+}
+
+.ev-card--skeleton:hover {
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.ev-card--skeleton:active {
+  transform: none;
+}
+
+.ev-card__img-wrap--skeleton {
+  background: transparent;
+}
+
+.ev-skeleton {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: rgba(217, 196, 171, 0.5);
+}
+
+.ev-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: evSkeleton 1.3s ease-in-out infinite;
+}
+
+.ev-skeleton--media {
+  width: 100%;
+  height: 100%;
+}
+
+.ev-skeleton--title {
+  width: 68%;
+  height: 1.125rem;
+  border-radius: 999px;
+}
+
+.ev-skeleton--line {
+  width: 100%;
+  height: 0.85rem;
+  border-radius: 999px;
+}
+
+.ev-skeleton--line-short {
+  width: 72%;
 }
 
 /* ───── CONFIGURATOR SECTIONS ───── */
