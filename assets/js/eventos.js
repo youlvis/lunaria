@@ -544,27 +544,6 @@
       errorMsg.classList.toggle("ev-hidden", isValid);
     };
 
-    // Press-and-hold acceleration for personas stepper
-    const addHold = (btn, fn) => {
-      let holdTimer = null;
-      let repeatTimer = null;
-      const clearTimers = () => {
-        if (holdTimer) clearTimeout(holdTimer);
-        if (repeatTimer) clearInterval(repeatTimer);
-        holdTimer = repeatTimer = null;
-      };
-      btn.addEventListener("pointerdown", (e) => {
-        e.preventDefault();
-        fn();
-        holdTimer = setTimeout(() => {
-          repeatTimer = setInterval(fn, 150);
-        }, 300);
-      });
-      ["pointerup", "pointerleave", "pointercancel"].forEach((ev) =>
-        btn.addEventListener(ev, clearTimers)
-      );
-    };
-
     const decOne = () => {
       store.personas = Math.max(1, store.personas - 1);
       updateDisplay();
@@ -576,8 +555,6 @@
 
     btnDec.addEventListener("click", decOne);
     btnInc.addEventListener("click", incOne);
-    addHold(btnDec, decOne);
-    addHold(btnInc, incOne);
 
     valueInput.addEventListener("input", () => {
       const raw = valueInput.value.replace(/\D/g, "");
