@@ -1615,12 +1615,11 @@ body.order-mode .menu-item__price {
   }
 
   .order-screen__body {
-    display: flex;
-    justify-content: center;
     padding: 1rem 0.95rem 1rem;
   }
 
   .order-content {
+    margin: 0 auto;
     max-width: 605px;
   }
 
@@ -1633,7 +1632,7 @@ body.order-mode .menu-item__price {
   }
 
   .order-cta {
-    right: max(0.85rem, calc((100vw - 1100px) / 2 + 1.5rem));
+    right: 20px;
     bottom: 1.05rem;
   }
 }

@@ -151,6 +151,7 @@
         class="order-cta hidden"
         type="button"
         aria-label="Ver pedido"
+        style="z-index: 9999;"
       >
         <span id="viewOrderCount" class="order-cta__count">0</span>
         <span class="order-cta__icon" aria-hidden="true">
@@ -548,8 +549,11 @@
         <div class="detail-modal__body">
           <h3 id="detailName" class="detail-modal__title"></h3>
           <p id="detailDesc" class="detail-modal__desc"></p>
-          <div class="detail-modal__price">
-            Precio: $<span id="detailPrice">0</span>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem;">
+            <div class="detail-modal__price" style="margin: 0;">
+              Precio: $<span id="detailPrice">0</span>
+            </div>
+            <div id="detailCartControls" class="detail-modal__cart hidden"></div>
           </div>
         </div>
       </div>

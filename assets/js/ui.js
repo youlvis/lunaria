@@ -18,6 +18,7 @@
     detailName: null,
     detailDesc: null,
     detailPrice: null,
+    detailCartControls: null,
     closeDetail: null,
     currentCat: null,
     viewOrderCta: null,
@@ -79,6 +80,7 @@
     DOM.detailName = document.getElementById("detailName");
     DOM.detailDesc = document.getElementById("detailDesc");
     DOM.detailPrice = document.getElementById("detailPrice");
+    DOM.detailCartControls = document.getElementById("detailCartControls");
     DOM.closeDetail = document.getElementById("closeDetail");
     DOM.currentCat = document.getElementById("currentCat");
     DOM.viewOrderCta = document.getElementById("viewOrderCta");
@@ -948,6 +950,16 @@
     if (DOM.detailName) DOM.detailName.textContent = it.nombre || "";
     if (DOM.detailDesc) DOM.detailDesc.textContent = it.descripcion || "";
     if (DOM.detailPrice) DOM.detailPrice.textContent = Store.fmt(it.precio || 0);
+
+    if (DOM.detailCartControls) {
+      if (isOrderMode()) {
+        DOM.detailCartControls.innerHTML = cartControlsMarkup(it.id, Store.getCartQty(it.id));
+        show(DOM.detailCartControls);
+      } else {
+        hide(DOM.detailCartControls);
+      }
+    }
+
     toggleDetail(true);
   }
 
@@ -1253,6 +1265,9 @@
 
     if (isOrderMode()) {
       addPress(DOM.viewOrderCta, () => {
+        if (DOM.detailModal && !DOM.detailModal.classList.contains("hidden")) {
+          closeDetail({ history: "replace" });
+        }
         setOrderScreen("checkout", { history: "push" });
       });
       addPress(DOM.orderBackBtn, () => closeOrderScreen("menu"));
