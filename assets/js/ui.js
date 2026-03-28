@@ -20,6 +20,45 @@
     detailPrice: null,
     closeDetail: null,
     currentCat: null,
+    viewOrderCta: null,
+    viewOrderCount: null,
+    viewOrderTotal: null,
+    orderFlow: null,
+    orderCheckoutScreen: null,
+    orderSummaryScreen: null,
+    orderBackBtn: null,
+    orderEmptyState: null,
+    orderEmptyBackBtn: null,
+    orderCheckoutBody: null,
+    orderCheckoutContent: null,
+    orderCheckoutFooter: null,
+    orderCartItems: null,
+    orderNotes: null,
+    orderName: null,
+    orderPhone: null,
+    orderAddress: null,
+    orderReference: null,
+    customTipBtn: null,
+    customTipWrap: null,
+    customTipInput: null,
+    orderSubtotal: null,
+    orderDelivery: null,
+    orderTipRow: null,
+    orderTipAmount: null,
+    orderTotal: null,
+    orderReviewBtn: null,
+    summaryBackBtn: null,
+    summaryItems: null,
+    summarySubtotal: null,
+    summaryDelivery: null,
+    summaryTip: null,
+    summaryTotal: null,
+    summaryAddress: null,
+    summaryCustomer: null,
+    summaryPayment: null,
+    summaryNotesBlock: null,
+    summaryNotes: null,
+    sendOrderBtn: null,
   };
 
   const initDOM = () => {
@@ -42,6 +81,46 @@
     DOM.detailPrice = document.getElementById("detailPrice");
     DOM.closeDetail = document.getElementById("closeDetail");
     DOM.currentCat = document.getElementById("currentCat");
+    DOM.viewOrderCta = document.getElementById("viewOrderCta");
+    DOM.viewOrderCount = document.getElementById("viewOrderCount");
+    DOM.viewOrderTotal = document.getElementById("viewOrderTotal");
+    DOM.orderFlow = document.getElementById("orderFlow");
+    DOM.orderCheckoutScreen = document.getElementById("orderCheckoutScreen");
+    DOM.orderSummaryScreen = document.getElementById("orderSummaryScreen");
+    DOM.orderBackBtn = document.getElementById("orderBackBtn");
+    DOM.orderEmptyState = document.getElementById("orderEmptyState");
+    DOM.orderEmptyBackBtn = document.getElementById("orderEmptyBackBtn");
+    DOM.orderCheckoutBody = document.getElementById("orderCheckoutBody");
+    DOM.orderCheckoutContent = document.getElementById("orderCheckoutContent");
+    DOM.orderCheckoutFooter = document.getElementById("orderCheckoutFooter");
+    DOM.orderCartItems = document.getElementById("orderCartItems");
+    DOM.orderNotes = document.getElementById("orderNotes");
+    DOM.orderName = document.getElementById("orderName");
+    DOM.orderPhone = document.getElementById("orderPhone");
+    DOM.orderAddress = document.getElementById("orderAddress");
+    DOM.orderReference = document.getElementById("orderReference");
+    DOM.customTipBtn = document.getElementById("customTipBtn");
+    DOM.customTipWrap = document.getElementById("customTipWrap");
+    DOM.customTipInput = document.getElementById("customTipInput");
+    DOM.orderSubtotal = document.getElementById("orderSubtotal");
+    DOM.orderDelivery = document.getElementById("orderDelivery");
+    DOM.orderTipRow = document.getElementById("orderTipRow");
+    DOM.orderTipAmount = document.getElementById("orderTipAmount");
+    DOM.orderTotal = document.getElementById("orderTotal");
+    DOM.orderReviewBtn = document.getElementById("orderReviewBtn");
+    DOM.summaryBackBtn = document.getElementById("summaryBackBtn");
+    DOM.summaryItems = document.getElementById("summaryItems");
+    DOM.summarySubtotal = document.getElementById("summarySubtotal");
+    DOM.summaryDelivery = document.getElementById("summaryDelivery");
+    DOM.summaryTip = document.getElementById("summaryTip");
+    DOM.summaryTotal = document.getElementById("summaryTotal");
+    DOM.summaryAddress = document.getElementById("summaryAddress");
+    DOM.summaryCustomer = document.getElementById("summaryCustomer");
+    DOM.summaryPayment = document.getElementById("summaryPayment");
+    DOM.summaryNotesBlock = document.getElementById("summaryNotesBlock");
+    DOM.summaryNotes = document.getElementById("summaryNotes");
+    DOM.sendOrderBtn = document.getElementById("sendOrderBtn");
+    document.body.classList.toggle("order-mode", Boolean(AppMode?.isOrder));
   };
 
   const $ = (s) => document.querySelector(s);
@@ -56,6 +135,7 @@
     document.body.scrollTop ||
     0;
   const MENU_HISTORY_KEY = "__menuView";
+  const ORDER_PRESET_TIPS = [0, 2000, 5000];
 
   const getSearchState = () => {
     const query = (DOM.searchUnified?.value || "").trim();
@@ -187,18 +267,31 @@
     });
   }
 
+  function cartControlsMarkup(id, qty) {
+    return `<div class="menu-item__cart" data-cart-controls><button class="qty-btn" type="button" data-cart-action="dec" data-item-id="${id}" aria-label="Quitar uno" ${qty <= 0 ? "disabled" : ""}>-</button><span class="qty-value" data-cart-qty="${id}">${qty}</span><button class="qty-btn" type="button" data-cart-action="inc" data-item-id="${id}" aria-label="Agregar uno">+</button></div>`;
+  }
+
   function rowItem(it) {
     const hasDesc = Boolean(it.descripcion && String(it.descripcion).trim().length);
     const div = document.createElement("div");
     div.className = "menu-item";
     div.setAttribute("data-detail", it.id);
+    div.dataset.itemId = it.id;
     const titleNorm = norm(it.nombre || "");
     const textNorm = norm(`${it.nombre || ""} ${it.descripcion || ""}`);
     div.dataset.searchTitle = titleNorm;
     div.dataset.searchText = textNorm;
     const thumb = cloudi(it.foto, 240);
     const thumb2x = cloudi(it.foto, 480);
-    div.innerHTML = `<div class="menu-item__thumb" data-detail="${it.id}"><img loading="lazy" decoding="async" fetchpriority="low" width="160" height="160" src="${thumb || ""}" srcset="${thumb || ""} 1x, ${thumb2x || thumb || ""} 2x" sizes="(max-width: 640px) 160px, 180px" alt="${it.nombre || ""}"></div><div class="menu-item__body"><div class="menu-item__title">${it.nombre || ""}</div>${hasDesc ? `<p class="menu-item__desc">${it.descripcion || ""}</p>` : ""}<div class="menu-item__price">$${Store.fmt(it.precio || 0)}</div></div>`;
+    const qty = AppMode?.isOrder ? Store.getCartQty(it.id) : 0;
+    const priceMarkup = `<div class="menu-item__price">$${Store.fmt(it.precio || 0)}</div>`;
+    const bottomMarkup = AppMode?.isOrder
+      ? `<div class="menu-item__meta">${priceMarkup}${cartControlsMarkup(
+          it.id,
+          qty
+        )}</div>`
+      : priceMarkup;
+    div.innerHTML = `<div class="menu-item__thumb" data-detail="${it.id}"><img loading="lazy" decoding="async" fetchpriority="low" width="160" height="160" src="${thumb || ""}" srcset="${thumb || ""} 1x, ${thumb2x || thumb || ""} 2x" sizes="(max-width: 640px) 160px, 180px" alt="${it.nombre || ""}"></div><div class="menu-item__body"><div class="menu-item__title">${it.nombre || ""}</div>${hasDesc ? `<p class="menu-item__desc">${it.descripcion || ""}</p>` : ""}${bottomMarkup}</div>`;
     return div;
   }
 
@@ -343,6 +436,320 @@
     }
   }
 
+  let currentOrderScreen = "menu";
+  let customTipOpen = false;
+
+  function isOrderMode() {
+    return Boolean(AppMode?.isOrder);
+  }
+
+  function formatMoney(value) {
+    return `$${Store.fmt(value || 0)}`;
+  }
+
+  function paymentLabel(value) {
+    return value === "transferencia" ? "Transferencia" : "Efectivo";
+  }
+
+  function getCartCount() {
+    return Store.state.cart.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
+  }
+
+  function getCheckoutSnapshot(snapshot) {
+    return buildMenuSnapshot(snapshot);
+  }
+
+  function resolveCartItem(item) {
+    const source = Store.getItemById(item.id) || {};
+    return {
+      ...source,
+      ...item,
+      id: item.id,
+      nombre: item.nombre || source.nombre || "",
+      descripcion: item.descripcion || source.descripcion || "",
+      foto: item.foto || source.foto || "",
+      precio: Number(item.precio ?? source.precio) || 0,
+      qty: Math.max(1, Number(item.qty) || 1),
+    };
+  }
+
+  function syncFieldValue(field, value) {
+    if (!field) return;
+    const next = typeof value === "string" ? value : String(value || "");
+    if (field.value !== next) field.value = next;
+  }
+
+  function getOrderWhatsAppPhone() {
+    const cfg = Store.state.cfg || {};
+    const raw =
+      cfg.telefono_whatsapp ||
+      cfg.whatsapp ||
+      cfg.telefono ||
+      (typeof EVENTOS_WA_PHONE !== "undefined" ? EVENTOS_WA_PHONE : "");
+    return String(raw || "").replace(/\D/g, "");
+  }
+
+  function buildOrderMessage() {
+    const order = Store.state.order;
+    const subtotal = Store.subtotal();
+    const delivery = Store.deliveryFee();
+    const total = Store.total();
+    const items = Store.state.cart
+      .map((item) => {
+        const resolved = resolveCartItem(item);
+        return `${resolved.qty}x ${resolved.nombre} - ${formatMoney(
+          resolved.precio * resolved.qty
+        )}`;
+      })
+      .join("\n");
+
+    return [
+      "Hola, quiero hacer este pedido:",
+      "",
+      items,
+      "",
+      `Subtotal: ${formatMoney(subtotal)}`,
+      `Domicilio: ${formatMoney(delivery)}`,
+      `Total: ${formatMoney(total)}`,
+      "",
+      `Nombre: ${order.customer.name || "-"}`,
+      `Telefono: ${order.customer.phone || "-"}`,
+      `Direccion: ${order.customer.address || "-"}`,
+      `Referencia: ${order.customer.reference || "-"}`,
+      `Pago: ${paymentLabel(order.payment)}`,
+      `Notas: ${order.notes || "-"}`,
+    ].join("\n");
+  }
+
+  function renderMenuCartControls() {
+    if (!isOrderMode()) return;
+    document.querySelectorAll("[data-cart-qty]").forEach((qtyEl) => {
+      const id = qtyEl.getAttribute("data-cart-qty");
+      const qty = Store.getCartQty(id);
+      qtyEl.textContent = String(qty);
+      const controls = qtyEl.closest("[data-cart-controls]");
+      const decBtn = controls?.querySelector('[data-cart-action="dec"]');
+      if (decBtn) decBtn.disabled = qty <= 0;
+    });
+  }
+
+  function renderOrderCta() {
+    if (!DOM.viewOrderCta) return;
+    const itemCount = getCartCount();
+    const shouldShow = isOrderMode() && currentOrderScreen === "menu" && itemCount > 0;
+    toggleHidden(DOM.viewOrderCta, !shouldShow);
+    if (!shouldShow) return;
+    if (DOM.viewOrderCount) DOM.viewOrderCount.textContent = String(itemCount);
+    if (DOM.viewOrderTotal) DOM.viewOrderTotal.textContent = formatMoney(Store.total());
+  }
+
+  function renderCheckoutItems() {
+    if (!DOM.orderCartItems) return;
+    DOM.orderCartItems.innerHTML = Store.state.cart
+      .map((item) => {
+        const resolved = resolveCartItem(item);
+        const img = cloudi(resolved.foto, 180) || resolved.foto || "";
+        return `<article class="order-item"><div class="order-item__media">${img ? `<img src="${img}" alt="${resolved.nombre}" loading="lazy" decoding="async">` : ""}</div><div class="order-item__body"><h3 class="order-item__title">${resolved.nombre}</h3><div class="order-item__price">${formatMoney(
+          resolved.precio
+        )}</div></div><div class="order-item__actions"><button class="order-item__remove" type="button" data-order-action="remove" data-item-id="${resolved.id}" aria-label="Eliminar plato"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16" /><path d="M10 11v6" /><path d="M14 11v6" /><path d="M6 7l1 12h10l1-12" /><path d="M9 7V4h6v3" /></svg></button><div class="order-item__qty"><button class="qty-btn" type="button" data-order-action="dec" data-item-id="${resolved.id}" aria-label="Quitar uno">-</button><span class="qty-value">${resolved.qty}</span><button class="qty-btn" type="button" data-order-action="inc" data-item-id="${resolved.id}" aria-label="Agregar uno">+</button></div></div></article>`;
+      })
+      .join("");
+  }
+
+  function syncOrderDraftFields() {
+    const order = Store.state.order;
+    syncFieldValue(DOM.orderNotes, order.notes || "");
+    syncFieldValue(DOM.orderName, order.customer.name || "");
+    syncFieldValue(DOM.orderPhone, order.customer.phone || "");
+    syncFieldValue(DOM.orderAddress, order.customer.address || "");
+    syncFieldValue(DOM.orderReference, order.customer.reference || "");
+    syncFieldValue(
+      DOM.customTipInput,
+      ORDER_PRESET_TIPS.includes(order.tip) ? "" : String(order.tip || "")
+    );
+
+    document.querySelectorAll("[data-payment]").forEach((btn) => {
+      btn.classList.toggle(
+        "is-active",
+        btn.getAttribute("data-payment") === order.payment
+      );
+    });
+
+    const isCustomTip =
+      customTipOpen || !ORDER_PRESET_TIPS.includes(Number(order.tip || 0));
+    document.querySelectorAll("[data-tip]").forEach((btn) => {
+      btn.classList.toggle(
+        "is-active",
+        !isCustomTip &&
+          Number(btn.getAttribute("data-tip")) === Number(order.tip || 0)
+      );
+    });
+
+    DOM.customTipBtn?.classList.toggle("is-active", isCustomTip);
+    toggleHidden(DOM.customTipWrap, !isCustomTip);
+  }
+
+  function renderCheckoutTotals() {
+    const subtotal = Store.subtotal();
+    const delivery = Store.deliveryFee();
+    const total = Store.total();
+
+    if (DOM.orderSubtotal) DOM.orderSubtotal.textContent = formatMoney(subtotal);
+    if (DOM.orderDelivery) DOM.orderDelivery.textContent = formatMoney(delivery);
+    if (DOM.orderTotal) DOM.orderTotal.textContent = formatMoney(total);
+  }
+
+  function renderSummaryView() {
+    if (!DOM.summaryItems) return;
+
+    DOM.summaryItems.innerHTML = Store.state.cart
+      .map((item) => {
+        const resolved = resolveCartItem(item);
+        return `<div class="summary-card__item"><span>${resolved.qty}x ${resolved.nombre}</span><strong>${formatMoney(
+          resolved.precio * resolved.qty
+        )}</strong></div>`;
+      })
+      .join("");
+
+    const subtotal = Store.subtotal();
+    const delivery = Store.deliveryFee();
+    const total = Store.total();
+    const order = Store.state.order;
+
+    if (DOM.summarySubtotal) DOM.summarySubtotal.textContent = formatMoney(subtotal);
+    if (DOM.summaryDelivery) DOM.summaryDelivery.textContent = formatMoney(delivery);
+    if (DOM.summaryTotal) DOM.summaryTotal.textContent = formatMoney(total);
+    if (DOM.summaryAddress) {
+      DOM.summaryAddress.textContent = order.customer.address || "Sin direccion";
+    }
+    if (DOM.summaryCustomer) {
+      const meta = [order.customer.name, order.customer.phone].filter(Boolean).join(" - ");
+      DOM.summaryCustomer.textContent = meta || "Completa tus datos para enviar el pedido.";
+    }
+    if (DOM.summaryPayment) {
+      DOM.summaryPayment.textContent = paymentLabel(order.payment);
+    }
+    if (DOM.summaryNotes) {
+      DOM.summaryNotes.textContent = order.notes || "";
+    }
+    if (DOM.sendOrderBtn) {
+      DOM.sendOrderBtn.disabled = !Store.state.cart.length;
+    }
+    toggleHidden(DOM.summaryNotesBlock, !order.notes);
+  }
+
+  function renderCheckoutView() {
+    const hasItems = Store.state.cart.length > 0;
+    toggleHidden(DOM.orderEmptyState, hasItems);
+    toggleHidden(DOM.orderCheckoutContent, !hasItems);
+    toggleHidden(DOM.orderCheckoutFooter, !hasItems);
+    if (!hasItems) return;
+
+    renderCheckoutItems();
+    syncOrderDraftFields();
+    renderCheckoutTotals();
+  }
+
+  function renderOrderViews() {
+    renderMenuCartControls();
+    renderOrderCta();
+    if (!isOrderMode()) return;
+    renderCheckoutView();
+    renderSummaryView();
+  }
+
+  function validateOrderBeforeSummary() {
+    const { customer } = Store.state.order;
+    if (!Store.state.cart.length) {
+      alert("Agrega al menos un plato antes de continuar.");
+      return false;
+    }
+    if (!customer.name.trim() || !customer.phone.trim() || !customer.address.trim()) {
+      alert("Completa nombre, telefono y direccion para revisar el pedido.");
+      return false;
+    }
+    return true;
+  }
+
+  function setOrderFlowOpen(open) {
+    toggleHidden(DOM.orderFlow, !open);
+    document.body.classList.toggle("order-flow-open", open);
+  }
+
+  function setOrderScreen(screen, options = {}) {
+    if (!isOrderMode()) return;
+    const nextScreen =
+      screen === "summary" ? "summary" : screen === "checkout" ? "checkout" : "menu";
+    const snapshot = getCheckoutSnapshot(options.snapshot);
+
+    if (options.history === "push") {
+      pushMenuHistoryState({ ...snapshot, screen: nextScreen, detailId: null });
+    } else if (options.history === "replace") {
+      replaceMenuHistoryState({ ...snapshot, screen: nextScreen, detailId: null });
+    }
+
+    currentOrderScreen = nextScreen;
+    setOrderFlowOpen(nextScreen !== "menu");
+    toggleHidden(DOM.orderCheckoutScreen, nextScreen !== "checkout");
+    toggleHidden(DOM.orderSummaryScreen, nextScreen !== "summary");
+
+    if (nextScreen === "checkout") {
+      DOM.orderCheckoutBody?.scrollTo({ top: 0, behavior: "auto" });
+    }
+    if (nextScreen === "summary") {
+      DOM.orderSummaryScreen?.querySelector(".order-screen__body")?.scrollTo({
+        top: 0,
+        behavior: "auto",
+      });
+    }
+    if (nextScreen === "menu" && options.restore !== false) {
+      restoreMenuSnapshot(snapshot);
+    }
+
+    renderOrderViews();
+  }
+
+  function closeOrderScreen(targetScreen) {
+    const state = window.history.state;
+    if (
+      isMenuHistoryState(state) &&
+      state.screen === (currentOrderScreen || "menu") &&
+      currentOrderScreen !== "menu"
+    ) {
+      window.history.back();
+      return;
+    }
+    setOrderScreen(targetScreen || "menu", { history: "replace" });
+  }
+
+  function handleOrderSend() {
+    if (!validateOrderBeforeSummary()) return;
+    const phone = getOrderWhatsAppPhone();
+    if (!phone) {
+      alert("No hay un numero de WhatsApp configurado para enviar este pedido.");
+      return;
+    }
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(
+      buildOrderMessage()
+    )}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+
+  function updateCartByAction(action, id) {
+    const source = Store.getItemById(id);
+    if (action === "inc") {
+      Store.incById(id, source);
+      return;
+    }
+    if (action === "dec") {
+      Store.decById(id, source);
+      return;
+    }
+    if (action === "remove") {
+      Store.removeById(id);
+    }
+  }
+
   let lastDetail = { id: null, scrollY: 0 };
   let menuHistoryWired = false;
 
@@ -373,6 +780,12 @@
     const snapshot = buildMenuSnapshot(overrides);
     return {
       [MENU_HISTORY_KEY]: true,
+      screen:
+        overrides.screen === "summary"
+          ? "summary"
+          : overrides.screen === "checkout"
+            ? "checkout"
+            : currentOrderScreen || "menu",
       detailId:
         overrides.detailId === null || overrides.detailId === undefined
           ? null
@@ -433,6 +846,23 @@
       search: state.search,
       scrollY: Number(state.scrollY) || 0,
     });
+    const screen = isOrderMode()
+      ? state.screen === "summary"
+        ? "summary"
+        : state.screen === "checkout"
+          ? "checkout"
+          : "menu"
+      : "menu";
+
+    if (screen !== "menu") {
+      if (DOM.detailModal && !DOM.detailModal.classList.contains("hidden")) {
+        closeDetail({ history: "pop", snapshot });
+      }
+      setOrderScreen(screen, { history: "pop", snapshot, restore: false });
+      return true;
+    }
+
+    setOrderScreen("menu", { history: "pop", snapshot });
 
     if (state.detailId) {
       openDetail(state.detailId, { history: "pop", snapshot });
@@ -821,7 +1251,84 @@
     withCompositionGuard(DOM.searchUnified, debouncedSearch);
     addPress(DOM.clearSearch, () => closeSearchPanel(true));
 
+    if (isOrderMode()) {
+      addPress(DOM.viewOrderCta, () => {
+        setOrderScreen("checkout", { history: "push" });
+      });
+      addPress(DOM.orderBackBtn, () => closeOrderScreen("menu"));
+      addPress(DOM.orderEmptyBackBtn, () => closeOrderScreen("menu"));
+      addPress(DOM.summaryBackBtn, () => closeOrderScreen("checkout"));
+      addPress(DOM.orderReviewBtn, () => {
+        if (!validateOrderBeforeSummary()) return;
+        setOrderScreen("summary", { history: "push" });
+      });
+      addPress(DOM.sendOrderBtn, handleOrderSend);
+      addPress(DOM.customTipBtn, () => {
+        customTipOpen = true;
+        if (ORDER_PRESET_TIPS.includes(Number(Store.state.order.tip || 0))) {
+          Store.setTip(0);
+        } else {
+          renderOrderViews();
+        }
+        DOM.customTipInput?.focus();
+      });
+
+      DOM.orderNotes?.addEventListener("input", () => {
+        Store.setNotes(DOM.orderNotes.value);
+      });
+      DOM.orderName?.addEventListener("input", () => {
+        Store.setCustomerField("name", DOM.orderName.value);
+      });
+      DOM.orderPhone?.addEventListener("input", () => {
+        Store.setCustomerField("phone", DOM.orderPhone.value);
+      });
+      DOM.orderAddress?.addEventListener("input", () => {
+        Store.setCustomerField("address", DOM.orderAddress.value);
+      });
+      DOM.orderReference?.addEventListener("input", () => {
+        Store.setCustomerField("reference", DOM.orderReference.value);
+      });
+      DOM.customTipInput?.addEventListener("input", () => {
+        customTipOpen = true;
+        Store.setTip(Math.max(0, Number(DOM.customTipInput.value) || 0));
+      });
+
+      Store.Events.on("cart:updated", () => {
+        if (!Store.state.cart.length && currentOrderScreen === "summary") {
+          setOrderScreen("checkout", { history: "replace" });
+          return;
+        }
+        renderOrderViews();
+      });
+      Store.Events.on("order:updated", renderOrderViews);
+    }
+
     document.addEventListener("click", (ev) => {
+      const cartAction = ev.target.closest("[data-cart-action], [data-order-action]");
+      if (cartAction) {
+        updateCartByAction(
+          cartAction.getAttribute("data-cart-action") ||
+            cartAction.getAttribute("data-order-action"),
+          cartAction.getAttribute("data-item-id")
+        );
+        return;
+      }
+
+      if (isOrderMode()) {
+        const paymentBtn = ev.target.closest("[data-payment]");
+        if (paymentBtn) {
+          Store.setPayment(paymentBtn.getAttribute("data-payment"));
+          return;
+        }
+
+        const tipBtn = ev.target.closest("[data-tip]");
+        if (tipBtn) {
+          customTipOpen = false;
+          Store.setTip(Number(tipBtn.getAttribute("data-tip")) || 0);
+          return;
+        }
+      }
+
       if (document.body.classList.contains("detail-open")) return;
       if (ev.target.closest("#detailModal")) return;
       const panelOpen = DOM.searchPanel && !DOM.searchPanel.classList.contains("hidden");
@@ -846,12 +1353,15 @@
     });
 
     document.addEventListener("click", (ev) => {
+      if (ev.target.closest("[data-cart-action]")) return;
+      if (ev.target.closest("[data-order-action]")) return;
       const b = ev.target.closest("[data-detail]");
       if (!b) return;
       openDetail(b.getAttribute("data-detail"), { history: "push" });
     }, { passive: true });
 
     initMenuHistory();
+    renderOrderViews();
   }
 
   return {

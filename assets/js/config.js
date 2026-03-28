@@ -8,7 +8,7 @@ const EVENTOS_ENDPOINT = "https://script.google.com/macros/s/AKfycby-xUvAYVhUP3n
 const EVENTOS_WA_PHONE = "3106514629";
 
 // Modo por defecto
-const DEFAULT_MODE = "menu"; // o "order"
+const DEFAULT_MODE = "menu"; // o "menu"
 
 const APP_FLAGS = Object.freeze({
   currency: "es-CO",

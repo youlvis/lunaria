@@ -11,23 +11,34 @@
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="preconnect" href="https://script.google.com" />
-    
+
     <title>Lunaria - Menú</title>
     <meta
       name="description"
       content="Menú digital de Lunaria: explora categorías, busca platos e ingredientes y descubre el detalle de cada producto."
     />
     <meta name="theme-color" content="#39646d" />
-    
+
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="assets/img/icon-192.png" />
-    
+
     <link rel="stylesheet" href="assets/css/styles.css" />
-    
+
     <!-- Cargar Google Fonts de forma asincrónica -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link
+      rel="preload"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+      as="style"
+      onload="
+        this.onload = null;
+        this.rel = 'stylesheet';
+      "
+    />
     <noscript>
-      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+      <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet"
+      />
     </noscript>
   </head>
 
@@ -55,17 +66,33 @@
       </a> -->
 
       <!-- BARRA DE ACCIONES -->
-      <section id="actionBar" class="action-bar"> 
+      <section id="actionBar" class="action-bar">
         <div id="optionsBar" class="action-bar__inner">
           <div class="action-bar__group action-bar__group--mobile">
-            <button id="openSearch" class="action-bar__button" aria-label="Buscar">
-              <img src="assets/img/search.svg" class="action-bar__icon" alt="Buscar" />
+            <button
+              id="openSearch"
+              class="action-bar__button"
+              aria-label="Buscar"
+            >
+              <img
+                src="assets/img/search.svg"
+                class="action-bar__icon"
+                alt="Buscar"
+              />
             </button>
           </div>
 
           <div class="action-bar__group action-bar__group--mobile">
-            <button id="openCatMenu" class="action-bar__button" aria-label="Categorías">
-              <img src="assets/img/menu-icon.svg" class="action-bar__icon" alt="Categorias" />
+            <button
+              id="openCatMenu"
+              class="action-bar__button"
+              aria-label="Categorías"
+            >
+              <img
+                src="assets/img/menu-icon.svg"
+                class="action-bar__icon"
+                alt="Categorias"
+              />
             </button>
           </div>
 
@@ -87,7 +114,11 @@
                 placeholder="Buscar platos, ingredientes o categorias"
                 class="search-panel__input"
               />
-              <button id="clearSearch" class="search-panel__clear" aria-label="Limpiar búsqueda"></button>
+              <button
+                id="clearSearch"
+                class="search-panel__clear"
+                aria-label="Limpiar búsqueda"
+              ></button>
             </div>
           </div>
         </div>
@@ -99,7 +130,13 @@
         <div class="overlay__container" data-close="overlay">
           <div class="overlay__panel">
             <div class="overlay__header">
-              <button class="overlay__close" data-close="overlay" aria-label="Cerrar">&times;</button>
+              <button
+                class="overlay__close"
+                data-close="overlay"
+                aria-label="Cerrar"
+              >
+                &times;
+              </button>
             </div>
             <div id="catMenu" class="overlay__content"></div>
           </div>
@@ -108,14 +145,388 @@
 
       <!-- CONTENIDO: secciones por categoria -->
       <main id="content" class="menu"></main>
+
+      <button
+        id="viewOrderCta"
+        class="order-cta hidden"
+        type="button"
+        aria-label="Ver pedido"
+      >
+        <span id="viewOrderCount" class="order-cta__count">0</span>
+        <span class="order-cta__icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M7 8V6a5 5 0 0 1 10 0v2" />
+            <path d="M5 8h14l1 11H4L5 8Z" />
+          </svg>
+        </span>
+        <span class="order-cta__label">Ver Pedido</span>
+        <span id="viewOrderTotal" class="order-cta__total">$0</span>
+      </button>
+    </div>
+
+    <div id="orderFlow" class="order-flow hidden">
+      <section id="orderCheckoutScreen" class="order-screen hidden">
+        <div class="order-screen__shell">
+          <header class="order-screen__header">
+            <button
+              id="orderBackBtn"
+              class="order-screen__back"
+              type="button"
+              aria-label="Volver"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <h1 class="order-screen__title">Tu Pedido</h1>
+          </header>
+
+          <div id="orderCheckoutBody" class="order-screen__body">
+            <div id="orderEmptyState" class="order-empty hidden">
+              <div class="order-empty__icon" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M7 8V6a5 5 0 0 1 10 0v2" />
+                  <path d="M5 8h14l1 11H4L5 8Z" />
+                </svg>
+              </div>
+              <h2 class="order-empty__title">Tu carrito esta vacio</h2>
+              <p class="order-empty__text">
+                Agrega algo del menu para continuar con tu pedido.
+              </p>
+              <button
+                id="orderEmptyBackBtn"
+                class="order-empty__button"
+                type="button"
+              >
+                Volver al menu
+              </button>
+            </div>
+
+            <div id="orderCheckoutContent" class="order-content">
+              <section class="order-panel">
+                <div id="orderCartItems" class="order-cart-list"></div>
+                <label class="order-note">
+                  <span class="order-label">Notas</span>
+                  <textarea
+                    id="orderNotes"
+                    class="order-note__input"
+                    rows="2"
+                    placeholder="Notas (Ej: sin cebolla, sin tomate...)"
+                  ></textarea>
+                </label>
+              </section>
+
+              <section class="order-section">
+                <div class="order-section__head">
+                  <h2 class="order-section__title">Tus Datos</h2>
+                </div>
+                <div class="order-panel order-panel--form">
+                  <div class="order-grid">
+                    <label class="order-field">
+                      <span class="order-label">Nombre</span>
+                      <input
+                        id="orderName"
+                        class="order-field__input"
+                        type="text"
+                        inputmode="text"
+                        autocomplete="name"
+                      />
+                    </label>
+                    <label class="order-field">
+                      <span class="order-label">Telefono</span>
+                      <input
+                        id="orderPhone"
+                        class="order-field__input"
+                        type="tel"
+                        inputmode="tel"
+                        autocomplete="tel"
+                      />
+                    </label>
+                  </div>
+                  <label class="order-field">
+                    <span class="order-label">Direccion de entrega</span>
+                    <input
+                      id="orderAddress"
+                      class="order-field__input"
+                      type="text"
+                      inputmode="text"
+                      autocomplete="street-address"
+                    />
+                  </label>
+                  <label class="order-field">
+                    <span class="order-label">Referencia</span>
+                    <input
+                      id="orderReference"
+                      class="order-field__input"
+                      type="text"
+                      inputmode="text"
+                    />
+                  </label>
+                </div>
+              </section>
+
+              <section class="order-section">
+                <div class="order-section__head">
+                  <h2 class="order-section__title">Metodo de Pago</h2>
+                </div>
+                <div class="order-payment">
+                  <button
+                    class="order-choice"
+                    type="button"
+                    data-payment="efectivo"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-banknote text-[#A46C4D]"
+                      aria-hidden="true"
+                    >
+                      <rect width="20" height="12" x="2" y="6" rx="2"></rect>
+                      <circle cx="12" cy="12" r="2"></circle>
+                      <path d="M6 12h.01M18 12h.01"></path>
+                    </svg>
+                    Efectivo
+                  </button>
+                  <button
+                    class="order-choice"
+                    type="button"
+                    data-payment="transferencia"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-landmark text-gray-400"
+                      aria-hidden="true"
+                    >
+                      <path d="M10 18v-7"></path>
+                      <path
+                        d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"
+                      ></path>
+                      <path d="M14 18v-7"></path>
+                      <path d="M18 18v-7"></path>
+                      <path d="M3 22h18"></path>
+                      <path d="M6 18v-7"></path>
+                    </svg>
+                    Transferencia
+                  </button>
+                </div>
+              </section>
+            </div>
+          </div>
+
+          <footer id="orderCheckoutFooter" class="order-footer">
+            <div class="order-footer__content">
+              <div class="order-footer__meta">
+                <div class="order-footer__row">
+                  <span>Subtotal</span>
+                  <strong id="orderSubtotal">$0</strong>
+                </div>
+                <div class="order-footer__row">
+                  <span>Domicilio</span>
+                  <strong id="orderDelivery">$0</strong>
+                </div>
+              </div>
+              <button
+                id="orderReviewBtn"
+                class="order-footer__button"
+                type="button"
+              >
+                <span>Revisar Pedido</span>
+                <span id="orderTotal" class="order-footer__button-total"
+                  >$0</span
+                >
+              </button>
+            </div>
+          </footer>
+        </div>
+      </section>
+
+      <section id="orderSummaryScreen" class="order-screen hidden">
+        <div class="order-screen__shell">
+          <header class="order-screen__header">
+            <button
+              id="summaryBackBtn"
+              class="order-screen__back"
+              type="button"
+              aria-label="Volver"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.9"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <h1 class="order-screen__title">Resumen Final</h1>
+          </header>
+
+          <div class="order-screen__body">
+            <div class="order-summary">
+              <div class="order-summary__hero">
+                <div class="order-summary__hero-icon" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                </div>
+                <h2 class="order-summary__title">Casi listo</h2>
+                <p class="order-summary__text">
+                  Revisa que todo este correcto antes de enviar tu pedido.
+                </p>
+              </div>
+
+              <section class="summary-card">
+                <span class="summary-card__eyebrow">Tu Orden</span>
+                <div id="summaryItems" class="summary-card__items"></div>
+                <div class="summary-card__totals">
+                  <div class="summary-card__row">
+                    <span>Subtotal</span>
+                    <strong id="summarySubtotal">$0</strong>
+                  </div>
+                  <div class="summary-card__row">
+                    <span>Domicilio</span>
+                    <strong id="summaryDelivery">$0</strong>
+                  </div>
+                </div>
+                <div class="summary-card__final">
+                  <span>Total a Pagar</span>
+                  <strong id="summaryTotal">$0</strong>
+                </div>
+              </section>
+
+              <section class="summary-card">
+                <div class="summary-block">
+                  <span class="summary-card__eyebrow">Entrega</span>
+                  <strong
+                    id="summaryAddress"
+                    class="summary-block__title"
+                  ></strong>
+                  <p id="summaryCustomer" class="summary-block__text"></p>
+                </div>
+                <div class="summary-block">
+                  <span class="summary-card__eyebrow">Pago</span>
+                  <strong
+                    id="summaryPayment"
+                    class="summary-block__title"
+                  ></strong>
+                </div>
+                <div id="summaryNotesBlock" class="summary-block hidden">
+                  <span class="summary-card__eyebrow">Notas</span>
+                  <p id="summaryNotes" class="summary-block__text"></p>
+                </div>
+              </section>
+
+              <div class="summary-info">
+                <div class="summary-info__icon" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 10v5" />
+                    <path d="M12 7.5h.01" />
+                  </svg>
+                </div>
+                <p class="summary-info__text">
+                  El pedido sera confirmado por WhatsApp antes de prepararse.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <footer class="order-footer order-footer--summary">
+            <button
+              id="sendOrderBtn"
+              class="order-footer__button order-footer__button--whatsapp"
+              type="button"
+            >
+              <span class="order-footer__button-icon" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M20 11.5a8 8 0 0 1-11.8 7.1L4 20l1.4-4.1A8 8 0 1 1 20 11.5Z"
+                  />
+                  <path
+                    d="M9.8 9.7c-.2-.4-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.2-.8.8-.8 1.8s.8 2.1.9 2.2c.1.1 1.5 2.4 3.8 3.2 1.8.6 2.2.5 2.6.4.4-.1 1.2-.5 1.4-1 .2-.5.2-.9.1-1-.1-.1-.4-.2-.9-.4-.4-.2-1-.5-1.2-.5-.2-.1-.4-.1-.6.2-.2.2-.7.8-.8 1-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.6-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.4.1-.6.1-.1.2-.3.4-.4.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5 0-.2-.5-1.2-.7-1.6Z"
+                  />
+                </svg>
+              </span>
+              <span>Enviar por WhatsApp</span>
+            </button>
+          </footer>
+        </div>
+      </section>
     </div>
 
     <!-- MODAL DETALLE (pantalla completa) -->
     <div id="detailModal" class="detail-modal hidden">
       <div class="detail-modal__backdrop" data-close="modal"></div>
       <div class="detail-modal__dialog">
-        <button id="closeDetail" class="detail-modal__close" aria-label="Cerrar">
-          <img src="assets/img/close-icon.svg" class="detail-modal__close-icon" alt="Cerrar" />
+        <button
+          id="closeDetail"
+          class="detail-modal__close"
+          aria-label="Cerrar"
+        >
+          <img
+            src="assets/img/close-icon.svg"
+            class="detail-modal__close-icon"
+            alt="Cerrar"
+          />
         </button>
         <div id="detailSkeleton" class="skeleton-container hidden">
           <div class="skeleton-container__media">
@@ -126,7 +537,9 @@
             <div class="skeleton-item skeleton-item--title-large"></div>
             <div class="skeleton-item skeleton-item--line"></div>
             <div class="skeleton-item skeleton-item--line"></div>
-            <div class="skeleton-item skeleton-item--line skeleton-item--line-short"></div>
+            <div
+              class="skeleton-item skeleton-item--line skeleton-item--line-short"
+            ></div>
           </div>
         </div>
         <div class="detail-modal__media">
