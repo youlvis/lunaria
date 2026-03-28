@@ -34,6 +34,7 @@
     orderCheckoutContent: null,
     orderCheckoutFooter: null,
     orderCartItems: null,
+    orderDeliveryFields: null,
     orderNotes: null,
     orderName: null,
     orderPhone: null,
@@ -96,6 +97,7 @@
     DOM.orderCheckoutContent = document.getElementById("orderCheckoutContent");
     DOM.orderCheckoutFooter = document.getElementById("orderCheckoutFooter");
     DOM.orderCartItems = document.getElementById("orderCartItems");
+    DOM.orderDeliveryFields = document.getElementById("orderDeliveryFields");
     DOM.orderNotes = document.getElementById("orderNotes");
     DOM.orderName = document.getElementById("orderName");
     DOM.orderPhone = document.getElementById("orderPhone");
@@ -496,6 +498,7 @@
     const subtotal = Store.subtotal();
     const delivery = Store.deliveryFee();
     const total = Store.total();
+    const isRecoger = order.deliveryType === "recoger";
     const items = Store.state.cart
       .map((item) => {
         const resolved = resolveCartItem(item);
@@ -505,22 +508,33 @@
       })
       .join("\n");
 
-    return [
+    const lines = [
       "Hola, quiero hacer este pedido:",
       "",
       items,
       "",
-      `Subtotal: ${formatMoney(subtotal)}`,
-      `Domicilio: ${formatMoney(delivery)}`,
-      `Total: ${formatMoney(total)}`,
-      "",
-      `Nombre: ${order.customer.name || "-"}`,
-      `Telefono: ${order.customer.phone || "-"}`,
-      `Direccion: ${order.customer.address || "-"}`,
-      `Referencia: ${order.customer.reference || "-"}`,
-      `Pago: ${paymentLabel(order.payment)}`,
-      `Notas: ${order.notes || "-"}`,
-    ].join("\n");
+      `Subtotal: ${formatMoney(subtotal)}`
+    ];
+
+    if (!isRecoger) {
+      lines.push(`Domicilio: ${formatMoney(delivery)}`);
+    }
+
+    lines.push(`Total: ${formatMoney(total)}`);
+    lines.push("");
+    lines.push(`Tipo de entrega: ${isRecoger ? "Recoger en tienda" : "A Domicilio"}`);
+    lines.push(`Nombre: ${order.customer.name || "-"}`);
+    lines.push(`Telefono: ${order.customer.phone || "-"}`);
+
+    if (!isRecoger) {
+      lines.push(`Direccion: ${order.customer.address || "-"}`);
+      lines.push(`Referencia: ${order.customer.reference || "-"}`);
+    }
+
+    lines.push(`Pago: ${paymentLabel(order.payment)}`);
+    lines.push(`Notas: ${order.notes || "-"}`);
+
+    return lines.join("\n");
   }
 
   function renderMenuCartControls() {
@@ -570,6 +584,13 @@
       ORDER_PRESET_TIPS.includes(order.tip) ? "" : String(order.tip || "")
     );
 
+    const isRecoger = order.deliveryType === "recoger";
+    toggleHidden(DOM.orderDeliveryFields, isRecoger);
+
+    document.querySelectorAll("[data-delivery]").forEach((btn) => {
+      btn.classList.toggle("is-active", btn.getAttribute("data-delivery") === order.deliveryType);
+    });
+
     document.querySelectorAll("[data-payment]").forEach((btn) => {
       btn.classList.toggle(
         "is-active",
@@ -617,12 +638,13 @@
     const delivery = Store.deliveryFee();
     const total = Store.total();
     const order = Store.state.order;
+    const isRecoger = order.deliveryType === "recoger";
 
     if (DOM.summarySubtotal) DOM.summarySubtotal.textContent = formatMoney(subtotal);
-    if (DOM.summaryDelivery) DOM.summaryDelivery.textContent = formatMoney(delivery);
+    if (DOM.summaryDelivery) DOM.summaryDelivery.textContent = isRecoger ? "Gratis (Recoger)" : formatMoney(delivery);
     if (DOM.summaryTotal) DOM.summaryTotal.textContent = formatMoney(total);
     if (DOM.summaryAddress) {
-      DOM.summaryAddress.textContent = order.customer.address || "Sin direccion";
+      DOM.summaryAddress.textContent = isRecoger ? "Recoger en el local" : (order.customer.address || "Sin direccion");
     }
     if (DOM.summaryCustomer) {
       const meta = [order.customer.name, order.customer.phone].filter(Boolean).join(" - ");
@@ -661,13 +683,17 @@
   }
 
   function validateOrderBeforeSummary() {
-    const { customer } = Store.state.order;
+    const { customer, deliveryType } = Store.state.order;
     if (!Store.state.cart.length) {
       alert("Agrega al menos un plato antes de continuar.");
       return false;
     }
-    if (!customer.name.trim() || !customer.phone.trim() || !customer.address.trim()) {
-      alert("Completa nombre, telefono y direccion para revisar el pedido.");
+    if (!customer.name.trim() || !customer.phone.trim()) {
+      alert("Completa tu nombre y teléfono para revisar el pedido.");
+      return false;
+    }
+    if (deliveryType === "domicilio" && !customer.address.trim()) {
+      alert("Completa tu dirección de entrega para enviar el pedido.");
       return false;
     }
     return true;
@@ -1326,6 +1352,12 @@
             cartAction.getAttribute("data-order-action"),
           cartAction.getAttribute("data-item-id")
         );
+        return;
+      }
+
+      const deliveryBtn = ev.target.closest("[data-delivery]");
+      if (deliveryBtn) {
+        Store.setDeliveryType(deliveryBtn.getAttribute("data-delivery"));
         return;
       }
 

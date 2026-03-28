@@ -43,6 +43,7 @@ const Store = (() => {
 
   const defaultOrder = () => ({
     notes: "",
+    deliveryType: "domicilio",
     customer: {
       name: "",
       phone: "",
@@ -57,6 +58,7 @@ const Store = (() => {
     const base = defaultOrder();
     return {
       notes: typeof order?.notes === "string" ? order.notes : base.notes,
+      deliveryType: order?.deliveryType === "recoger" ? "recoger" : base.deliveryType,
       customer: {
         name:
           typeof order?.customer?.name === "string"
@@ -219,10 +221,15 @@ const Store = (() => {
     updateOrder({ tip: Math.max(0, Number(tip) || 0) });
   };
 
+  const setDeliveryType = (type) => {
+    updateOrder({ deliveryType: type === "recoger" ? "recoger" : "domicilio" });
+  };
+
   const subtotal = () =>
     state.cart.reduce((sum, item) => sum + item.precio * item.qty, 0);
 
   const deliveryFee = () =>
+    state.order.deliveryType === "recoger" ? 0 :
     readMoney(
       state.cfg.delivery_fee,
       state.cfg.deliveryFee,
@@ -255,6 +262,7 @@ const Store = (() => {
     setNotes,
     setPayment,
     setTip,
+    setDeliveryType,
     inc,
     dec,
     del,

@@ -151,7 +151,7 @@
         class="order-cta hidden"
         type="button"
         aria-label="Ver pedido"
-        style="z-index: 9999;"
+        style="z-index: 9999"
       >
         <span id="viewOrderCount" class="order-cta__count">0</span>
         <span class="order-cta__icon" aria-hidden="true">
@@ -242,6 +242,65 @@
                 <div class="order-section__head">
                   <h2 class="order-section__title">Tus Datos</h2>
                 </div>
+                <div class="delivery-toggle">
+                  <button
+                    type="button"
+                    class="delivery-toggle__btn is-active"
+                    data-delivery="domicilio"
+                  >
+                    <svg
+                      class="delivery-toggle__icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="18.5" cy="17.5" r="3.5" />
+                      <circle cx="5.5" cy="17.5" r="3.5" />
+                      <circle cx="15" cy="5" r="1" />
+                      <path d="M12 17.5V14l-3-3 4-3 2 3h2" />
+                    </svg>
+                    A Domicilio
+                  </button>
+                  <button
+                    type="button"
+                    class="delivery-toggle__btn"
+                    data-delivery="recoger"
+                  >
+                    <svg
+                      class="delivery-toggle__icon"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="lucide lucide-store"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"
+                      ></path>
+                      <path
+                        d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"
+                      ></path>
+                      <path
+                        d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"
+                      ></path>
+                      <path d="M2 7h20"></path>
+                      <path
+                        d="M22 7v3a2 2 0 0 1-2 2a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12a2 2 0 0 1-2-2V7"
+                      ></path>
+                    </svg>
+                    Recoger
+                  </button>
+                </div>
                 <div class="order-panel order-panel--form">
                   <div class="order-grid">
                     <label class="order-field">
@@ -265,25 +324,28 @@
                       />
                     </label>
                   </div>
-                  <label class="order-field">
-                    <span class="order-label">Direccion de entrega</span>
-                    <input
-                      id="orderAddress"
-                      class="order-field__input"
-                      type="text"
-                      inputmode="text"
-                      autocomplete="street-address"
-                    />
-                  </label>
-                  <label class="order-field">
-                    <span class="order-label">Referencia</span>
-                    <input
-                      id="orderReference"
-                      class="order-field__input"
-                      type="text"
-                      inputmode="text"
-                    />
-                  </label>
+                  <div id="orderDeliveryFields">
+                    <label class="order-field">
+                      <span class="order-label">Direccion de entrega</span>
+                      <input
+                        id="orderAddress"
+                        class="order-field__input"
+                        type="text"
+                        inputmode="text"
+                        autocomplete="street-address"
+                      />
+                    </label>
+                    <label class="order-field">
+                      <span class="order-label">Referencia (Opcional)</span>
+                      <input
+                        id="orderReference"
+                        class="order-field__input"
+                        type="text"
+                        inputmode="text"
+                        placeholder="Ej: Casa blanca, portón negro..."
+                      />
+                    </label>
+                  </div>
                 </div>
               </section>
 
@@ -549,11 +611,21 @@
         <div class="detail-modal__body">
           <h3 id="detailName" class="detail-modal__title"></h3>
           <p id="detailDesc" class="detail-modal__desc"></p>
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem;">
-            <div class="detail-modal__price" style="margin: 0;">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-top: 1rem;
+            "
+          >
+            <div class="detail-modal__price" style="margin: 0">
               Precio: $<span id="detailPrice">0</span>
             </div>
-            <div id="detailCartControls" class="detail-modal__cart hidden"></div>
+            <div
+              id="detailCartControls"
+              class="detail-modal__cart hidden"
+            ></div>
           </div>
         </div>
       </div>
