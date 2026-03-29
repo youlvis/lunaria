@@ -682,20 +682,52 @@
     renderSummaryView();
   }
 
+  function setFieldError(fieldElement, hasError) {
+    if (!fieldElement) return;
+    fieldElement.classList.toggle("has-error", hasError);
+    const errorMsg = fieldElement.querySelector(".order-field__error");
+    if (errorMsg) {
+      errorMsg.classList.toggle("hidden", !hasError);
+    }
+  }
+
   function validateOrderBeforeSummary() {
     const { customer, deliveryType } = Store.state.order;
+    let isValid = true;
+
     if (!Store.state.cart.length) {
       alert("Agrega al menos un plato antes de continuar.");
       return false;
     }
-    if (!customer.name.trim() || !customer.phone.trim()) {
-      alert("Completa tu nombre y teléfono para revisar el pedido.");
+
+    const fieldName = DOM.orderName?.closest(".order-field");
+    const fieldPhone = DOM.orderPhone?.closest(".order-field");
+    const fieldAddress = DOM.orderAddress?.closest(".order-field");
+
+    const nameValid = Boolean(customer.name.trim());
+    setFieldError(fieldName, !nameValid);
+    if (!nameValid) isValid = false;
+
+    const phoneValid = Boolean(customer.phone.trim());
+    setFieldError(fieldPhone, !phoneValid);
+    if (!phoneValid) isValid = false;
+
+    if (deliveryType === "domicilio") {
+      const addressValid = Boolean(customer.address.trim());
+      setFieldError(fieldAddress, !addressValid);
+      if (!addressValid) isValid = false;
+    } else {
+      setFieldError(fieldAddress, false);
+    }
+
+    if (!isValid) {
+      const firstError = document.querySelector(".has-error");
+      if (firstError) {
+        firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
       return false;
     }
-    if (deliveryType === "domicilio" && !customer.address.trim()) {
-      alert("Completa tu dirección de entrega para enviar el pedido.");
-      return false;
-    }
+
     return true;
   }
 
@@ -1319,12 +1351,21 @@
       });
       DOM.orderName?.addEventListener("input", () => {
         Store.setCustomerField("name", DOM.orderName.value);
+        if (DOM.orderName.value.trim()) {
+          setFieldError(DOM.orderName.closest(".order-field"), false);
+        }
       });
       DOM.orderPhone?.addEventListener("input", () => {
         Store.setCustomerField("phone", DOM.orderPhone.value);
+        if (DOM.orderPhone.value.trim()) {
+          setFieldError(DOM.orderPhone.closest(".order-field"), false);
+        }
       });
       DOM.orderAddress?.addEventListener("input", () => {
         Store.setCustomerField("address", DOM.orderAddress.value);
+        if (DOM.orderAddress.value.trim()) {
+          setFieldError(DOM.orderAddress.closest(".order-field"), false);
+        }
       });
       DOM.orderReference?.addEventListener("input", () => {
         Store.setCustomerField("reference", DOM.orderReference.value);
