@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   color-scheme: light;
   --sticky-offset: 0px;
   --bg: #f0e5c3;
@@ -1853,11 +1853,12 @@ body.order-mode .menu-item__price {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   cursor: pointer;
-  animation: fade-in-down 0.5s 0.2s ease-out backwards;
+  animation: fade-in-down 0.5s 0.2s ease-out backwards, pulse 2s infinite;
 }
 
 .last-order-btn:hover {
   background: rgba(0, 0, 0, 0.6);
+  animation-play-state: paused;
 }
 
 .last-order-btn__icon {
@@ -1877,6 +1878,21 @@ body.order-mode .menu-item__price {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
   }
 }
 
