@@ -556,7 +556,7 @@
     toggleHidden(DOM.viewOrderCta, !shouldShow);
     if (!shouldShow) return;
     if (DOM.viewOrderCount) DOM.viewOrderCount.textContent = String(itemCount);
-    if (DOM.viewOrderTotal) DOM.viewOrderTotal.textContent = formatMoney(Store.total());
+    if (DOM.viewOrderTotal) DOM.viewOrderTotal.textContent = formatMoney(Store.subtotal());
   }
 
   function renderCheckoutItems() {
