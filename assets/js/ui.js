@@ -1,4 +1,4 @@
-﻿const UI = (() => {
+const UI = (() => {
   // --- Cached DOM references ---
   const DOM = {
     actionBar: null,
@@ -61,6 +61,11 @@
     summaryNotesBlock: null,
     summaryNotes: null,
     sendOrderBtn: null,
+    lastOrderBtn: null,
+    lastOrderModal: null,
+    lastOrderItems: null,
+    lastOrderTotal: null,
+    repeatOrderBtn: null,
   };
 
   const initDOM = () => {
@@ -124,6 +129,11 @@
     DOM.summaryNotesBlock = document.getElementById("summaryNotesBlock");
     DOM.summaryNotes = document.getElementById("summaryNotes");
     DOM.sendOrderBtn = document.getElementById("sendOrderBtn");
+    DOM.lastOrderBtn = document.getElementById("lastOrderBtn");
+    DOM.lastOrderModal = document.getElementById("lastOrderModal");
+    DOM.lastOrderItems = document.getElementById("lastOrderItems");
+    DOM.lastOrderTotal = document.getElementById("lastOrderTotal");
+    DOM.repeatOrderBtn = document.getElementById("repeatOrderBtn");
     document.body.classList.toggle("order-mode", Boolean(AppMode?.isOrder));
   };
 
@@ -247,7 +257,7 @@
       btn.className = "overlay__item";
       btn.textContent = c;
       btn.onclick = () => {
-        closeOverlay();
+        closeOverlay("catMenuOverlay");
         goToCategory(`#sec-${slug(c)}`, "smooth");
       };
       DOM.catMenu.appendChild(btn);
@@ -784,6 +794,9 @@
 
   function handleOrderSend() {
     if (!validateOrderBeforeSummary()) return;
+
+    Store.saveAsLastOrder();
+
     const phone = getOrderWhatsAppPhone();
     if (!phone) {
       alert("No hay un numero de WhatsApp configurado para enviar este pedido.");
@@ -793,6 +806,11 @@
       buildOrderMessage()
     )}`;
     window.open(url, "_blank", "noopener,noreferrer");
+
+    setTimeout(() => {
+      Store.clear();
+      setOrderScreen('menu', { history: 'replace' });
+    }, 500);
   }
 
   function updateCartByAction(action, id) {
@@ -1035,11 +1053,44 @@
   }
 
   function openOverlay(id) {
-    $(id)?.classList.remove("hidden");
+    const el = document.getElementById(id.replace("#", ""));
+    if (el) show(el);
   }
 
-  function closeOverlay() {
-    if (DOM.catMenuOverlay) DOM.catMenuOverlay.classList.add("hidden");
+  function closeOverlay(id) {
+    const el = document.getElementById(id.replace("#", ""));
+    if (el) hide(el);
+  }
+
+  function initLastOrderFeature() {
+    const lastOrder = Store.getLastOrder();
+    if (!lastOrder || lastOrder.length === 0) {
+      hide(DOM.lastOrderBtn);
+      return;
+    }
+
+    show(DOM.lastOrderBtn);
+
+    const total = lastOrder.reduce((t, item) => t + (item.precio * item.qty), 0);
+    if (DOM.lastOrderTotal) {
+      DOM.lastOrderTotal.textContent = formatMoney(total);
+    }
+
+    if (DOM.lastOrderItems) {
+      DOM.lastOrderItems.innerHTML = lastOrder.map(item => {
+        const resolved = resolveCartItem(item);
+        const img = cloudi(resolved.foto, 100) || resolved.foto || "";
+        return `
+          <div class="last-order-item">
+            <div class="last-order-item__thumb">
+              ${img ? `<img src="${img}" alt="${resolved.nombre}">` : ''}
+            </div>
+            <div class="last-order-item__name">${resolved.qty}x ${resolved.nombre}</div>
+            <div class="last-order-item__price">${formatMoney(resolved.precio * resolved.qty)}</div>
+          </div>
+        `;
+      }).join('');
+    }
   }
 
   let scrollSpyFrame = 0;
@@ -1294,26 +1345,29 @@
   }
 
   function wireEvents() {
-    DOM.openCatMenu?.addEventListener("click", () => {
-      openOverlay("#catMenuOverlay");
-      const activeText = DOM.catTabs?.querySelector(".is-active")?.textContent?.trim();
-      const list = DOM.catMenu;
-      if (list && activeText) {
-        const btn = Array.from(list.querySelectorAll("button")).find((b) => b.textContent.trim() === activeText);
-        btn?.scrollIntoView({ block: "center", behavior: "auto" });
+    DOM.openCatMenu?.addEventListener("click", () => openOverlay("#catMenuOverlay"));
+
+    document.querySelectorAll('[data-close-overlay]').forEach((e) => {
+      const targetId = e.getAttribute('data-close-overlay');
+      const container = e.closest('.overlay__container');
+
+      if (container) {
+        const closeIfSelf = (ev) => { if (ev.target === e) closeOverlay(`#${targetId}`); };
+        e.addEventListener("click", closeIfSelf);
+        e.addEventListener("touchend", (ev) => {
+          if (ev.target === e) { ev.preventDefault(); closeOverlay(`#${targetId}`); }
+        }, { passive: false });
+      } else {
+        addPress(e, () => closeOverlay(`#${targetId}`));
       }
     });
 
-    document.querySelectorAll('#catMenuOverlay [data-close="overlay"]').forEach((e) => {
-      if (e.classList.contains("overlay__container")) {
-        const closeIfSelf = (ev) => { if (ev.target === e) closeOverlay(); };
-        e.addEventListener("click", closeIfSelf);
-        e.addEventListener("touchend", (ev) => {
-          if (ev.target === e) { ev.preventDefault(); closeOverlay(); }
-        }, { passive: false });
-      } else {
-        addPress(e, closeOverlay);
-      }
+    addPress(DOM.lastOrderBtn, () => openOverlay("#lastOrderModal"));
+
+    addPress(DOM.repeatOrderBtn, () => {
+      Store.addLastOrderToCart();
+      closeOverlay("#lastOrderModal");
+      setOrderScreen('checkout', { history: 'push' });
     });
 
     addPress(DOM.openSearch, openSearchPanel);
@@ -1428,7 +1482,13 @@
     });
 
     document.addEventListener("keydown", (ev) => {
-      if (ev.key === "Escape") closeSearchPanel(true);
+      if (ev.key === "Escape") {
+        if (!DOM.lastOrderModal.classList.contains("hidden")) {
+          closeOverlay("#lastOrderModal");
+        } else {
+          closeSearchPanel(true);
+        }
+      }
     });
 
     addPress(DOM.closeDetail, (ev) => {
@@ -1462,5 +1522,6 @@
     wireEvents,
     applySearch,
     calcOffset,
+    initLastOrderFeature,
   };
 })();

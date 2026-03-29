@@ -1,6 +1,7 @@
 const Store = (() => {
   const CART_KEY = "cart";
   const ORDER_KEY = "lunaria_order_draft";
+  const LAST_ORDER_KEY = "lunaria_last_order";
   const currency = (APP_FLAGS && APP_FLAGS.currency) || "es-CO";
 
   const safeParse = (key, fallback) => {
@@ -190,6 +191,24 @@ const Store = (() => {
     persistCart();
   };
 
+  const saveAsLastOrder = () => {
+    if (state.cart.length > 0) {
+      localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(state.cart));
+    }
+  };
+
+  const getLastOrder = () => {
+    return safeParse(LAST_ORDER_KEY, []);
+  };
+
+  const addLastOrderToCart = () => {
+    const lastOrder = getLastOrder();
+    if (lastOrder.length > 0) {
+      state.cart = normalizeCart(lastOrder);
+      persistCart();
+    }
+  };
+
   const updateOrder = (patch = {}) => {
     state.order = normalizeOrder({
       ...state.order,
@@ -268,5 +287,8 @@ const Store = (() => {
     del,
     clear,
     Events,
+    saveAsLastOrder,
+    getLastOrder,
+    addLastOrderToCart,
   };
 })();

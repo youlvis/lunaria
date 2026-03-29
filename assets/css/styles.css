@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   color-scheme: light;
   --sticky-offset: 0px;
   --bg: #f0e5c3;
@@ -1832,4 +1832,144 @@ body.order-mode .menu-item__price {
     font-size: 0.875rem;
     padding: 0.75rem 1rem;
   }
+}
+
+/* Last Order Button */
+.last-order-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.8rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  animation: fade-in-down 0.5s 0.2s ease-out backwards;
+}
+
+.last-order-btn:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.last-order-btn__icon {
+  width: 18px;
+  height: 18px;
+}
+.last-order-btn__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Last Order Panel */
+.last-order-panel {
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.last-order-panel .overlay__header {
+  align-items: center;
+  padding: 0.5rem 0.75rem 0.5rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.last-order-panel__title {
+  flex: 1;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.last-order-panel__body {
+  padding: 0.75rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.last-order-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.last-order-item__thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.last-order-item__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.last-order-item__name {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.last-order-item__name span {
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.last-order-item__price {
+  font-weight: 700;
+  color: var(--accent-weak);
+  font-size: 0.9rem;
+}
+
+.last-order-panel__footer {
+  margin-top: auto;
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.last-order-panel__total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.last-order-panel__total strong {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+.last-order-panel__footer .order-footer__button {
+  background: var(--accent);
+  justify-content: center;
 }

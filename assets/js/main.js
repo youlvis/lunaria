@@ -14,6 +14,7 @@
     UI.mountScrollSpy(grouped.cats);
     UI.wireEvents();
     UI.applySearch();
+    UI.initLastOrderFeature();
   } catch (e) {
     console.error(e);
     alert('No se pudo cargar el menú. Reintenta en unos segundos.');

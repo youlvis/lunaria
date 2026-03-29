@@ -56,6 +56,12 @@
             class="hero__img"
           />
         </div>
+        <button id="lastOrderBtn" class="last-order-btn hidden" type="button">
+          <span class="last-order-btn__icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+          </span>
+          <span class="last-order-btn__text">Último pedido</span>
+        </button>
       </header>
 
       <!-- BANNER EVENTOS -->
@@ -684,6 +690,29 @@
               id="detailCartControls"
               class="detail-modal__cart hidden"
             ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LAST ORDER MODAL -->
+    <div id="lastOrderModal" class="overlay hidden">
+      <div class="overlay__backdrop" data-close-overlay="lastOrderModal"></div>
+      <div class="overlay__container">
+        <div class="overlay__panel last-order-panel">
+          <div class="overlay__header">
+            <h2 class="last-order-panel__title">Último Pedido</h2>
+            <button class="overlay__close" data-close-overlay="lastOrderModal" aria-label="Cerrar">&times;</button>
+          </div>
+          <div id="lastOrderItems" class="last-order-panel__body">
+            <!-- Items will be rendered here by JS -->
+          </div>
+          <div class="last-order-panel__footer">
+            <div class="last-order-panel__total">
+              <span>Total</span>
+              <strong id="lastOrderTotal">$0</strong>
+            </div>
+            <button id="repeatOrderBtn" class="order-footer__button" type="button">Repetir Pedido</button>
           </div>
         </div>
       </div>
