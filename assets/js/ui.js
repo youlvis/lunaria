@@ -1425,7 +1425,7 @@ const UI = (() => {
         }
         renderOrderViews();
       });
-      Store.Events.on("order:updated", renderOrderViews);
+      Store.Events.on("order:updated", syncOrderDraftFields);
     }
 
     document.addEventListener("click", (ev) => {
