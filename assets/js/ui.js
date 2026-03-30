@@ -28,11 +28,7 @@ const UI = (() => {
     orderCheckoutScreen: null,
     orderSummaryScreen: null,
     orderBackBtn: null,
-    orderEmptyState: null,
-    orderEmptyBackBtn: null,
     orderCheckoutBody: null,
-    orderCheckoutContent: null,
-    orderCheckoutFooter: null,
     orderCartItems: null,
     orderDeliveryFields: null,
     orderNotes: null,
@@ -96,11 +92,7 @@ const UI = (() => {
     DOM.orderCheckoutScreen = document.getElementById("orderCheckoutScreen");
     DOM.orderSummaryScreen = document.getElementById("orderSummaryScreen");
     DOM.orderBackBtn = document.getElementById("orderBackBtn");
-    DOM.orderEmptyState = document.getElementById("orderEmptyState");
-    DOM.orderEmptyBackBtn = document.getElementById("orderEmptyBackBtn");
     DOM.orderCheckoutBody = document.getElementById("orderCheckoutBody");
-    DOM.orderCheckoutContent = document.getElementById("orderCheckoutContent");
-    DOM.orderCheckoutFooter = document.getElementById("orderCheckoutFooter");
     DOM.orderCartItems = document.getElementById("orderCartItems");
     DOM.orderDeliveryFields = document.getElementById("orderDeliveryFields");
     DOM.orderNotes = document.getElementById("orderNotes");
@@ -673,12 +665,6 @@ const UI = (() => {
   }
 
   function renderCheckoutView() {
-    const hasItems = Store.state.cart.length > 0;
-    toggleHidden(DOM.orderEmptyState, hasItems);
-    toggleHidden(DOM.orderCheckoutContent, !hasItems);
-    toggleHidden(DOM.orderCheckoutFooter, !hasItems);
-    if (!hasItems) return;
-
     renderCheckoutItems();
     syncOrderDraftFields();
     renderCheckoutTotals();
@@ -809,8 +795,9 @@ const UI = (() => {
 
     setTimeout(() => {
       Store.clear();
+      initLastOrderFeature();
       setOrderScreen('menu', { history: 'replace' });
-    }, 500);
+    }, 100);
   }
 
   function updateCartByAction(action, id) {
@@ -1362,7 +1349,10 @@ const UI = (() => {
       }
     });
 
-    addPress(DOM.lastOrderBtn, () => openOverlay("#lastOrderModal"));
+    addPress(DOM.lastOrderBtn, () => {
+      initLastOrderFeature();
+      openOverlay("#lastOrderModal");
+    });
 
     addPress(DOM.repeatOrderBtn, () => {
       Store.addLastOrderToCart();
@@ -1383,13 +1373,12 @@ const UI = (() => {
         setOrderScreen("checkout", { history: "push" });
       });
       addPress(DOM.orderBackBtn, () => closeOrderScreen("menu"));
-      addPress(DOM.orderEmptyBackBtn, () => closeOrderScreen("menu"));
       addPress(DOM.summaryBackBtn, () => closeOrderScreen("checkout"));
       addPress(DOM.orderReviewBtn, () => {
         if (!validateOrderBeforeSummary()) return;
         setOrderScreen("summary", { history: "push" });
+        addPress(DOM.sendOrderBtn, handleOrderSend);
       });
-      addPress(DOM.sendOrderBtn, handleOrderSend);
       addPress(DOM.customTipBtn, () => {
         customTipOpen = true;
         if (ORDER_PRESET_TIPS.includes(Number(Store.state.order.tip || 0))) {
@@ -1430,8 +1419,8 @@ const UI = (() => {
       });
 
       Store.Events.on("cart:updated", () => {
-        if (!Store.state.cart.length && currentOrderScreen === "summary") {
-          setOrderScreen("checkout", { history: "replace" });
+        if (!Store.state.cart.length) {
+          setOrderScreen("menu", { history: "replace" });
           return;
         }
         renderOrderViews();

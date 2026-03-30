@@ -722,10 +722,6 @@ body.order-flow-open:not(.detail-open) {
   overflow: hidden;
 }
 
-body.order-mode .menu {
-  padding-bottom: 5.7rem;
-}
-
 body.order-mode .menu-item {
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
@@ -1394,56 +1390,6 @@ body.order-mode .menu-item__price {
 .order-footer__button-icon svg {
   width: 100%;
   height: 100%;
-}
-
-.order-empty {
-  min-height: calc(100vh - 9rem);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.85rem;
-  text-align: center;
-  padding: 2rem 1rem 5rem;
-}
-
-.order-empty__icon {
-  width: 5.5rem;
-  height: 5.5rem;
-  border-radius: 50%;
-  display: inline-grid;
-  place-items: center;
-  background: rgba(255, 247, 234, 0.88);
-  color: var(--accent);
-}
-
-.order-empty__icon svg {
-  width: 2.1rem;
-  height: 2.1rem;
-}
-
-.order-empty__title {
-  font-size: 1.45rem;
-  font-weight: 800;
-  color: var(--text);
-}
-
-.order-empty__text {
-  max-width: 18rem;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.order-empty__button {
-  margin-top: 0.35rem;
-  min-width: 12rem;
-  border: none;
-  border-radius: 999px;
-  padding: 0.95rem 1.4rem;
-  background: linear-gradient(135deg, #a96f4c 0%, #b67f59 100%);
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 800;
 }
 
 .order-summary__hero {
