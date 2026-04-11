@@ -1,5 +1,5 @@
 // Versión del Service Worker — incrementar para forzar actualización del shell
-const SW_VERSION = "1.8";
+const SW_VERSION = "1.9";
 const SHELL_CACHE = `lunaria-shell-v${SW_VERSION}`;
 
 // Archivos que forman el "app shell" (estructura de la app)
