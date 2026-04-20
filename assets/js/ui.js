@@ -1041,7 +1041,15 @@ const UI = (() => {
 
   function openOverlay(id) {
     const el = document.getElementById(id.replace("#", ""));
-    if (el) show(el);
+    if (!el) return;
+    show(el);
+    // Reset scroll al top y quitar foco retenido para evitar scroll automático y sombrado
+    const content = el.querySelector(".overlay__content");
+    if (content) {
+      content.scrollTop = 0;
+      const focused = content.querySelector(":focus");
+      if (focused) focused.blur();
+    }
   }
 
   function closeOverlay(id) {
