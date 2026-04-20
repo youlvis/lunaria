@@ -1,19 +1,21 @@
 ﻿// Banner de eventos
 const EventoBanner = (() => {
+  const BANNER_ACTIVE = false; // Cambiar a true para activar el banner
   const BANNER_DELAY = 2000; // Mostrar después de 2 segundos
 
   const close = (el) => {
     if (el) {
       el.classList.add('hidden');
-      // Mostrar el botón de "ver pedido" nuevamente
+      // Restaurar el display inline para que renderOrderCta pueda controlar la visibilidad
       const viewOrderBtn = document.getElementById('viewOrderCta');
-      if (viewOrderBtn && !viewOrderBtn.classList.contains('hidden')) {
+      if (viewOrderBtn) {
         viewOrderBtn.style.display = '';
       }
     }
   };
 
   const init = () => {
+    if (!BANNER_ACTIVE) return;
     const banner = document.getElementById('eventoBanner');
     if (!banner) return;
 
