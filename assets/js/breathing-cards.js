@@ -20,10 +20,9 @@ const BreathingCards = (() => {
   // Derivado de slug("Promo del Día") → "list-promo-del-dia"
   var PROMO_LIST_ID = 'list-promo-del-dia';
 
-  // Duración total del ciclo CSS en ms:
-  //   ~3.25 s de espera + ~1.75 s de pulso (rise 0.875 s + fall 0.875 s) = 5 s
+  // Duración total del ciclo CSS en ms.
   // Coincidir con la animation-duration declarada en styles.css.
-  var CYCLE_MS = 5000;
+  var CYCLE_MS = 2000;
 
   function init() {
     // Guarda 1: respetar preferencia de accesibilidad del usuario.

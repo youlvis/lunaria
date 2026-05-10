@@ -771,6 +771,24 @@ img {
   color: var(--muted);
 }
 
+.preloader__retry {
+  margin-top: 1.25rem;
+  padding: 0.6rem 1.6rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.preloader__retry:hover {
+  opacity: 0.85;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -2249,11 +2267,11 @@ body.order-mode .menu-item__price {
  * nunca se modifica → cero re-renders ni recalculos de layout.
  * ──────────────────────────────────────────────────────────────────────── */
 @keyframes lnrBreath {
-  0%, 65% {
+  0%, 35% {
     transform: scale(1);
     box-shadow: 0 2px 6px var(--shadow);
   }
-  82.5% {
+  70% {
     transform: scale(1.022);
     box-shadow: 0 6px 22px rgba(186, 148, 110, 0.30);
   }
@@ -2268,7 +2286,7 @@ body.order-mode .menu-item__price {
  * `transform-origin: center` garantiza que el pulso sea simétrico. */
 .menu-item--promo {
   transform-origin: center;
-  animation: lnrBreath 5s ease-in-out infinite;
+  animation: lnrBreath 2s ease-in-out infinite;
   animation-play-state: paused;
 }
 

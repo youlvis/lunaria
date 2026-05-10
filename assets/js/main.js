@@ -45,13 +45,27 @@ const EventoBanner = (() => {
 })();
 
 (async function init() {
-  const hidePreloader = () => document.getElementById('preloader')?.classList.add('hidden');
+  const preloader = document.getElementById('preloader');
+  const hidePreloader = () => preloader?.classList.add('hidden');
+
+  const showError = () => {
+    if (!preloader) return;
+    preloader.innerHTML = `
+      <div class="preloader__box">
+        <p class="preloader__text">No se pudo cargar el menú.</p>
+        <button class="preloader__retry" onclick="location.reload()">Reintentar</button>
+      </div>`;
+  };
+
   try {
     UI.initDOM();
     UI.calcOffset();
     const data = await fetchMenu();
     Store.state.items = (data.items || []).filter(i => i && i.nombre);
     Store.state.cfg = data.config || {};
+
+    // Si el resultado tiene 0 ítems, tratar como error para mostrar el botón de reintento
+    if (!Store.state.items.length) throw new Error('empty_menu');
 
     const grouped = UI.groupByCategory(Store.state.items);
     UI.buildTabs(grouped.cats);
@@ -65,10 +79,9 @@ const EventoBanner = (() => {
     
     // Inicializar banner de eventos
     EventoBanner.init();
+    hidePreloader();
   } catch (e) {
     console.error(e);
-    alert('No se pudo cargar el menú. Reintenta en unos segundos.');
-  } finally {
-    hidePreloader();
+    showError();
   }
 })();
