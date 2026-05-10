@@ -147,8 +147,6 @@ const HeartsAnimation = (() => {
     for (let i = 0; i < burstCount; i++) {
       frag.appendChild(createBurstHeart());
     }
-    // Lower container back to background layer before burst lands
-    container.style.zIndex = '1';
     container.appendChild(frag);
   };
 
@@ -183,6 +181,12 @@ const HeartsAnimation = (() => {
     const preloader = document.getElementById('preloader');
     if (!preloader) {
       // No preloader in DOM — fire burst immediately
+      triggerBurst(container);
+      return;
+    }
+
+    // If preloader is already hidden (e.g. service worker cache hit), burst now
+    if (preloader.classList.contains('hidden')) {
       triggerBurst(container);
       return;
     }

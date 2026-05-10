@@ -1,7 +1,7 @@
 ﻿// Banner de eventos
 const EventoBanner = (() => {
   const BANNER_ACTIVE = false; // Cambiar a true para activar el banner
-  const BANNER_DELAY = 2000; // Mostrar después de 2 segundos
+  const BANNER_DELAY = 3000; // Mostrar después de 3 segundos
 
   const close = (el) => {
     if (el) {
