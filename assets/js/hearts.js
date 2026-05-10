@@ -147,6 +147,8 @@ const HeartsAnimation = (() => {
     for (let i = 0; i < burstCount; i++) {
       frag.appendChild(createBurstHeart());
     }
+     // Lower container back to background layer before burst lands
+    container.style.zIndex = '101';
     container.appendChild(frag);
   };
 

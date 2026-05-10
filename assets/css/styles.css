@@ -1811,7 +1811,7 @@ body.order-mode .menu-item__price {
 #hearts-container {
   position: fixed;
   inset: 0;
-  z-index: 31;          /* below all UI surfaces */
+  z-index: 101;          /* below all UI surfaces */
   pointer-events: none; /* never intercepts clicks/scroll/touch */
   overflow: hidden;
   /* Hidden by default; JS removes the attribute after populating hearts */
