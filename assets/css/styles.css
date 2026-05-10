@@ -2173,3 +2173,62 @@ body.order-mode .menu-item__price {
   background: var(--accent);
   justify-content: center;
 }
+
+/* ── Mother's Day Image Greeting ─────────────────────── */
+.mdm-img-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  background: transparent;
+}
+
+.mdm-img-overlay__img {
+  width: 65vw;
+  max-width: 450px;
+  height: auto;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  will-change: transform, opacity;
+}
+
+/* Reduced motion: static display, no animation */
+.mdm-img-overlay--reduced .mdm-img-overlay__img {
+  opacity: 1;
+}
+
+/* Full animation: fade-in → 3 heartbeat cycles → fade-out */
+.mdm-img-overlay--animated .mdm-img-overlay__img {
+  animation: mdmGreetingShow 5.2s ease-in-out forwards;
+}
+
+@keyframes mdmGreetingShow {
+  0%   { opacity: 0; transform: scale(0.88); }
+  12%  { opacity: 1; transform: scale(1); }
+  24%  { transform: scale(1.07); }
+  34%  { transform: scale(1); }
+  46%  { transform: scale(1.07); }
+  56%  { transform: scale(1); }
+  68%  { transform: scale(1.07); }
+  78%  { transform: scale(1); }
+  88%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.95); }
+}
+
+@media (min-width: 768px) {
+  .mdm-img-overlay__img {
+    width: auto;
+    max-width: 480px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mdm-img-overlay--animated .mdm-img-overlay__img {
+    animation: none;
+    opacity: 1;
+  }
+}
