@@ -129,6 +129,29 @@ const HeartsAnimation = (() => {
     return el;
   };
 
+  // ── Device tier (shared between phases) ─────────────────────────────────
+  const deviceTier = () => {
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const cores    = navigator.hardwareConcurrency || 4;
+    const mem      = navigator.deviceMemory || 4;
+    const conn     = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    const slowNet  = conn && (conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g');
+    return { isMobile, isLowEnd: cores <= 2 || mem <= 1 || slowNet };
+  };
+
+  // ── Burst trigger (called once when preloader hides) ─────────────────────
+  const triggerBurst = (container) => {
+    const { isMobile, isLowEnd } = deviceTier();
+    const burstCount = isLowEnd ? 6 : isMobile ? randInt(10, 14) : randInt(22, 28);
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < burstCount; i++) {
+      frag.appendChild(createBurstHeart());
+    }
+    // Lower container back to background layer before burst lands
+    container.style.zIndex = '1';
+    container.appendChild(frag);
+  };
+
   // ── Init ─────────────────────────────────────────────────────────────────
   const init = () => {
     // Guard 1: only active during Mother's Day window
@@ -140,35 +163,37 @@ const HeartsAnimation = (() => {
     const container = document.getElementById('hearts-container');
     if (!container) return;
 
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    const cores    = navigator.hardwareConcurrency || 4;
-    const mem      = navigator.deviceMemory || 4;
-    const conn     = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    const slowNet  = conn && (conn.effectiveType === 'slow-2g' || conn.effectiveType === '2g');
-    const isLowEnd = cores <= 2 || mem <= 1 || slowNet;
+    // ── Phase 1: Rain hearts only ─────────────────────────────────────────
+    // Raise z-index above the preloader (z-index: 50) so hearts are
+    // visible while the menu is loading. JS resets this to 1 on burst.
+    container.style.zIndex = '55';
 
-    // ── Burst phase ── temporary hearts that explode on load then vanish
-    const burstCount = isLowEnd ? 6 : isMobile ? randInt(10, 14) : randInt(22, 28);
-    const burstFrag  = document.createDocumentFragment();
-    for (let i = 0; i < burstCount; i++) {
-      burstFrag.appendChild(createBurstHeart());
-    }
-
-    // ── Rain phase ── steady infinite loop
     const count    = resolveHeartCount();
     const fragment = document.createDocumentFragment();
     for (let i = 0; i < count; i++) {
       fragment.appendChild(createHeart());
     }
-
-    // Two DOM writes merged into one reveal
-    const combined = document.createDocumentFragment();
-    combined.appendChild(burstFrag);
-    combined.appendChild(fragment);
-
     // Single DOM write → single reflow
-    container.appendChild(combined);
+    container.appendChild(fragment);
     container.removeAttribute('hidden');
+
+    // ── Phase 2: Burst when preloader disappears ──────────────────────────
+    // MutationObserver watches for the 'hidden' class being added to
+    // #preloader. Self-disconnects after firing once → zero ongoing cost.
+    const preloader = document.getElementById('preloader');
+    if (!preloader) {
+      // No preloader in DOM — fire burst immediately
+      triggerBurst(container);
+      return;
+    }
+
+    const observer = new MutationObserver(() => {
+      if (preloader.classList.contains('hidden')) {
+        observer.disconnect();
+        triggerBurst(container);
+      }
+    });
+    observer.observe(preloader, { attributes: true, attributeFilter: ['class'] });
   };
 
   return { init };
