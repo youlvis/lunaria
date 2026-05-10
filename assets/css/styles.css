@@ -1800,7 +1800,108 @@ body.order-mode .menu-item__price {
     font-size: 14px;
     letter-spacing: 0.8px;
   }
+}
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   HEARTS ANIMATION — Día de la Madre
+   Performance: only transform + opacity animated (both compositor-only).
+   Zero layout shifts. Zero repaints. Zero pointer interference.
+═══════════════════════════════════════════════════════════════════════════ */
+
+#hearts-container {
+  position: fixed;
+  inset: 0;
+  z-index: 31;          /* below all UI surfaces */
+  pointer-events: none; /* never intercepts clicks/scroll/touch */
+  overflow: hidden;
+  /* Hidden by default; JS removes the attribute after populating hearts */
+}
+
+#hearts-container[hidden] {
+  display: none;
+}
+
+.lnr-heart {
+  position: absolute;
+  top: 0;
+  /* left, width, height, duration, delay, --base-opacity, --sway set by JS */
+  color: #c97d8e;       /* muted rose — warm, complements Lunaria's cream palette */
+  will-change: transform, opacity;
+  animation: lnrHeartFall linear infinite;
+}
+
+/* Burst hearts override: one-shot, floats upward from mid-screen */
+.lnr-heart--burst {
+  top: 0; /* overridden inline by JS with vh units */
+  animation-name: lnrHeartBurst;
+  animation-timing-function: ease-out;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+.lnr-heart svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+  stroke: #b86070;
+  stroke-width: 0.4;
+}
+
+/**
+ * Steady rain: two-axis fall from top, infinite loop.
+ */
+@keyframes lnrHeartFall {
+  0% {
+    transform: translate3d(0, -8vh, 0) scale(0.85);
+    opacity: 0;
+  }
+  8% {
+    opacity: var(--base-opacity, 0.6);
+  }
+  40% {
+    transform: translate3d(calc(var(--sway, 0px) * 0.45), 44vh, 0) scale(1);
+  }
+  88% {
+    opacity: var(--base-opacity, 0.6);
+  }
+  100% {
+    transform: translate3d(var(--sway, 0px), 110vh, 0) scale(0.9);
+    opacity: 0;
+  }
+}
+
+/**
+ * Burst: hearts appear across the screen, scale up and float upward,
+ * then fade out. Plays once then the element is removed by JS.
+ */
+@keyframes lnrHeartBurst {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.1);
+    opacity: 0;
+  }
+  14% {
+    transform: translate3d(calc(var(--sway, 0px) * 0.15), -4vh, 0) scale(1.2);
+    opacity: var(--base-opacity, 0.8);
+  }
+  55% {
+    transform: translate3d(calc(var(--sway, 0px) * 0.55), -14vh, 0) scale(1);
+    opacity: calc(var(--base-opacity, 0.8) * 0.75);
+  }
+  100% {
+    transform: translate3d(var(--sway, 0px), -28vh, 0) scale(0.5);
+    opacity: 0;
+  }
+}
+
+/* Accessibility: honor user's motion preference */
+@media (prefers-reduced-motion: reduce) {
+  #hearts-container {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1024px) {
   .menu__list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
