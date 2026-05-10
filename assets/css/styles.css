@@ -96,11 +96,11 @@ img {
   z-index: 101;
   background: transparent;
   border-radius: 1.5rem;
-  overflow: visible;
-  max-width: 400px;
-  width: 95%;
-  height: 100vh;
-  max-height: 615px;
+  overflow: hidden;
+  max-width: 420px;
+  width: 92%;
+  max-height: 90vh;
+  max-height: 90dvh;
   display: flex;
   flex-direction: column;
   animation: slideUpBanner 0.4s ease-out;
@@ -144,11 +144,12 @@ img {
 
 .evento-banner__image {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  max-height: 90vh;
+  max-height: 90dvh;
+  object-fit: contain;
   display: block;
   border-radius: 1.5rem;
-  flex: 1;
 }
 
 .evento-banner__button {
@@ -2230,5 +2231,59 @@ body.order-mode .menu-item__price {
   .mdm-img-overlay--animated .mdm-img-overlay__img {
     animation: none;
     opacity: 1;
+  }
+}
+
+/* ── Breathing Card — Platos promocionales ───────────────────────────────
+ *
+ * Ciclo: 8.3 s totales.
+ *   0 % – 87 %  → reposo (scale 1, sombra base) — 7.22 s de espera
+ *   93.5 %      → pico del pulso (scale 1.015, sombra suave realzada)
+ *   100 %       → retorno al reposo — animación continua en loop
+ *
+ * Solo se animan `transform` + `box-shadow`:
+ *   - transform: maneja el GPU compositor directamente.
+ *   - box-shadow: repinta solo la capa del elemento (compositor layer).
+ *
+ * `animation-play-state` controla si la animación corre; el keyframe en sí
+ * nunca se modifica → cero re-renders ni recalculos de layout.
+ * ──────────────────────────────────────────────────────────────────────── */
+@keyframes lnrBreath {
+  0%, 65% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px var(--shadow);
+  }
+  82.5% {
+    transform: scale(1.022);
+    box-shadow: 0 6px 22px rgba(186, 148, 110, 0.30);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 2px 6px var(--shadow);
+  }
+}
+
+/* Estado base: animación declarada pero congelada.
+ * `animation-delay` se asigna por JS para el stagger → no se duplica aquí.
+ * `transform-origin: center` garantiza que el pulso sea simétrico. */
+.menu-item--promo {
+  transform-origin: center;
+  animation: lnrBreath 5s ease-in-out infinite;
+  animation-play-state: paused;
+}
+
+/* Estado activo: card visible en viewport (clase añadida por IntersectionObserver).
+ * `will-change` solo aquí → el browser promove el elemento a compositor layer
+ * únicamente cuando realmente va a animar. Fuera del viewport se libera. */
+.menu-item--promo.lnr-breathing {
+  animation-play-state: running;
+  will-change: transform;
+}
+
+/* Accesibilidad: si el usuario prefiere sin movimiento, la guarda JS ya evita
+ * añadir `.menu-item--promo`, pero este bloque sirve como defensa en profundidad. */
+@media (prefers-reduced-motion: reduce) {
+  .menu-item--promo {
+    animation: none !important;
   }
 }

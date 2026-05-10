@@ -57,6 +57,7 @@ const EventoBanner = (() => {
     UI.buildTabs(grouped.cats);
     UI.buildCatMenus(grouped.cats);
     UI.buildSections(grouped);
+    BreathingCards.init();
     UI.mountScrollSpy(grouped.cats);
     UI.wireEvents();
     UI.applySearch();
