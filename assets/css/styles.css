@@ -154,13 +154,13 @@ img {
 
 .evento-banner__button {
   position: absolute;
-  bottom: 1.5rem;
+  bottom: 0.4rem;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.6rem 1rem;
+  padding: 0.3rem .1rem;
   background: white;
   color: var(--text);
   text-decoration: none;
