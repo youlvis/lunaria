@@ -13,7 +13,7 @@ const HeartsAnimation = (() => {
   // ── Active date window ───────────────────────────────────────────────────
   // Mother's Day in Colombia = second Sunday of May.
   // Window: May 8–12 to cover the full celebration period.
-  const ACTIVE = { month: 4, dayStart: 8, dayEnd: 12 }; // month is 0-indexed
+  const ACTIVE = { month: 8, dayStart: 0, dayEnd: 30 }; // month is 0-indexed
 
   // ── Heart shape (inline SVG — no external request) ──────────────────────
   const HEART_SVG =
