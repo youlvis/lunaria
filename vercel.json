@@ -57,15 +57,9 @@
   ],
   "redirects": [
     {
-      "source": "/menu",
-      "destination": "https://lunaria-two.vercel.app",
-      "permanent": false
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/eventos",
-      "destination": "/eventos.html"
+      "source": "/:path((?!sw\\.js$).*)",
+      "destination": "https://lunariagl.com/carta",
+      "permanent": true
     }
   ]
 }
